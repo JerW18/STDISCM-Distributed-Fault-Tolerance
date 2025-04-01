@@ -1,0 +1,6 @@
+@Upload_Grade_Service_HostAddress = http://localhost:5018
+
+GET {{Upload_Grade_Service_HostAddress}}/uploadgrade/
+Accept: application/json
+
+###

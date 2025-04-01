@@ -1,0 +1,6 @@
+@View_Grade_Service_HostAddress = http://localhost:5278
+
+GET {{View_Grade_Service_HostAddress}}/viewgrade/
+Accept: application/json
+
+###

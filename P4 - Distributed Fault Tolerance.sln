@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35919.96
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "P4 - Distributed Fault Tolerance", "P4 - Distributed Fault Tolerance\P4 - Distributed Fault Tolerance.csproj", "{D1088C88-8877-494A-B92C-69445869BF70}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authentication Service", "Authentication Service\Authentication Service.csproj", "{54D0A124-5E87-433D-980B-EEBA5BCC6CB6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "View Course Service", "View Course Service\View Course Service.csproj", "{0CC6E5E0-694C-42E9-8BCF-F9FEA6DC667C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Enroll Course Service", "Enroll Course Service\Enroll Course Service.csproj", "{3197A867-40CA-459E-943C-9D94BFF084C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "View Grade Service", "View Grade Service\View Grade Service.csproj", "{F2961710-6874-4BF7-87DB-41AFFF514D1E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Upload Grade Service", "Upload Grade Service\Upload Grade Service.csproj", "{F3C29D41-21D2-4A12-A506-0E385E46EEA4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D1088C88-8877-494A-B92C-69445869BF70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1088C88-8877-494A-B92C-69445869BF70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1088C88-8877-494A-B92C-69445869BF70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1088C88-8877-494A-B92C-69445869BF70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54D0A124-5E87-433D-980B-EEBA5BCC6CB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54D0A124-5E87-433D-980B-EEBA5BCC6CB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54D0A124-5E87-433D-980B-EEBA5BCC6CB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54D0A124-5E87-433D-980B-EEBA5BCC6CB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CC6E5E0-694C-42E9-8BCF-F9FEA6DC667C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CC6E5E0-694C-42E9-8BCF-F9FEA6DC667C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CC6E5E0-694C-42E9-8BCF-F9FEA6DC667C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CC6E5E0-694C-42E9-8BCF-F9FEA6DC667C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3197A867-40CA-459E-943C-9D94BFF084C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3197A867-40CA-459E-943C-9D94BFF084C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3197A867-40CA-459E-943C-9D94BFF084C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3197A867-40CA-459E-943C-9D94BFF084C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2961710-6874-4BF7-87DB-41AFFF514D1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2961710-6874-4BF7-87DB-41AFFF514D1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2961710-6874-4BF7-87DB-41AFFF514D1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2961710-6874-4BF7-87DB-41AFFF514D1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3C29D41-21D2-4A12-A506-0E385E46EEA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3C29D41-21D2-4A12-A506-0E385E46EEA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3C29D41-21D2-4A12-A506-0E385E46EEA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3C29D41-21D2-4A12-A506-0E385E46EEA4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {240ADFE6-5B26-4E9D-ACDB-3B095A324B31}
+	EndGlobalSection
+EndGlobal
