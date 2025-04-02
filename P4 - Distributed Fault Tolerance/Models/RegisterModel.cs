@@ -4,6 +4,7 @@ namespace P4___Distributed_Fault_Tolerance.Models
 {
     public class RegisterModel
     {
+        [Required] public required string IdNumber { get; set; }
         [Required] public required string FirstName { get; set; }
         [Required] public required string LastName { get; set; }
         [Required] public required string Email { get; set; }
