@@ -1,0 +1,38 @@
+﻿@model P4___Distributed_Fault_Tolerance.Models.RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+<h2>Register</h2>
+
+<form asp-action="Register" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <label>First Name</label>
+    <input asp-for="FirstName" class="form-control" />
+
+    <label>Last Name</label>
+    <input asp-for="LastName" class="form-control" />
+
+    <label>Email</label>
+    <input asp-for="Email" type="email" class="form-control" />
+
+    <label>Password</label>
+    <input asp-for="Password" type="password" class="form-control" />
+
+    <label>Confirm Password</label>
+    <input asp-for="ConfirmPassword" type="password" class="form-control" />
+
+    <label>Role</label>
+    <select asp-for="Role" class="form-control">
+        <option value="Student">Student</option>
+        <option value="Teacher">Teacher</option>
+        <option value="Admin">Admin</option>
+    </select>
+
+    <button type="submit" class="btn btn-primary">Register</button>
+</form>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
+
