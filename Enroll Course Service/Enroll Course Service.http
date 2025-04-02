@@ -1,6 +1,0 @@
-@Enroll_Course_Service_HostAddress = http://localhost:5265
-
-GET {{Enroll_Course_Service_HostAddress}}/enrollcourse/
-Accept: application/json
-
-###

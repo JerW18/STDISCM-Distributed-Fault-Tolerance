@@ -1,6 +1,0 @@
-@View_Course_Service_HostAddress = http://localhost:5037
-
-GET {{View_Course_Service_HostAddress}}/viewcourse/
-Accept: application/json
-
-###

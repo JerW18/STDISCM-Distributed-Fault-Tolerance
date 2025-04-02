@@ -14,7 +14,7 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        private readonly string _apiBaseUrl = "https://localhost:5001/api/auth"; // Change this to your API URL
+        private readonly string _apiBaseUrl = "https://localhost:5001/api/auth";
 
         public AccountController(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
         {
@@ -28,14 +28,12 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            // Check if the user is already authenticated
             if (User.Identity.IsAuthenticated)
             {
-                // If authenticated, redirect to Home/Index
                 return RedirectToAction("Index", "Home");
             }
 
-            return View();  // Show the login view if not authenticated
+            return View(); 
         }
 
         [HttpPost]

@@ -1,0 +1,6 @@
+@Grade_Service_HostAddress = http://localhost:5058
+
+GET {{Grade_Service_HostAddress}}/grade/
+Accept: application/json
+
+###

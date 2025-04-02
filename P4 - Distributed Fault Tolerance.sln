@@ -7,13 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "P4 - Distributed Fault Tole
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authentication Service", "Authentication Service\Authentication Service.csproj", "{54D0A124-5E87-433D-980B-EEBA5BCC6CB6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "View Course Service", "View Course Service\View Course Service.csproj", "{0CC6E5E0-694C-42E9-8BCF-F9FEA6DC667C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Course Service", "Course Service\Course Service.csproj", "{4AB9CE4A-575C-4E96-8FDA-F978825B46AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Enroll Course Service", "Enroll Course Service\Enroll Course Service.csproj", "{3197A867-40CA-459E-943C-9D94BFF084C5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "View Grade Service", "View Grade Service\View Grade Service.csproj", "{F2961710-6874-4BF7-87DB-41AFFF514D1E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Upload Grade Service", "Upload Grade Service\Upload Grade Service.csproj", "{F3C29D41-21D2-4A12-A506-0E385E46EEA4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grade Service", "Grade Service\Grade Service.csproj", "{2D750131-F399-4665-854F-3508DA518CF3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,22 +25,14 @@ Global
 		{54D0A124-5E87-433D-980B-EEBA5BCC6CB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54D0A124-5E87-433D-980B-EEBA5BCC6CB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{54D0A124-5E87-433D-980B-EEBA5BCC6CB6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0CC6E5E0-694C-42E9-8BCF-F9FEA6DC667C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0CC6E5E0-694C-42E9-8BCF-F9FEA6DC667C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0CC6E5E0-694C-42E9-8BCF-F9FEA6DC667C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0CC6E5E0-694C-42E9-8BCF-F9FEA6DC667C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3197A867-40CA-459E-943C-9D94BFF084C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3197A867-40CA-459E-943C-9D94BFF084C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3197A867-40CA-459E-943C-9D94BFF084C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3197A867-40CA-459E-943C-9D94BFF084C5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F2961710-6874-4BF7-87DB-41AFFF514D1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F2961710-6874-4BF7-87DB-41AFFF514D1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F2961710-6874-4BF7-87DB-41AFFF514D1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F2961710-6874-4BF7-87DB-41AFFF514D1E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F3C29D41-21D2-4A12-A506-0E385E46EEA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F3C29D41-21D2-4A12-A506-0E385E46EEA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F3C29D41-21D2-4A12-A506-0E385E46EEA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F3C29D41-21D2-4A12-A506-0E385E46EEA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AB9CE4A-575C-4E96-8FDA-F978825B46AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AB9CE4A-575C-4E96-8FDA-F978825B46AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AB9CE4A-575C-4E96-8FDA-F978825B46AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AB9CE4A-575C-4E96-8FDA-F978825B46AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D750131-F399-4665-854F-3508DA518CF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D750131-F399-4665-854F-3508DA518CF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D750131-F399-4665-854F-3508DA518CF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D750131-F399-4665-854F-3508DA518CF3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
