@@ -1,8 +1,43 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-4">
+    <div class="row">
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="col-md-3 mb-3">
+                <a class="btn btn-primary btn-block">View available courses</a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a class="btn btn-primary btn-block">Enroll in open courses</a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a class="btn btn-primary btn-block">View previous grades</a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a class="btn btn-primary btn-block">Upload grades</a>
+            </div>
+        }
+        else if (User.IsInRole("Student"))
+        {
+            <div class="col-md-4 mb-3">
+                <a class="btn btn-primary btn-block">View available courses</a>
+            </div>
+            <div class="col-md-4 mb-3">
+                <a class="btn btn-primary btn-block">Enroll in open courses</a>
+            </div>
+            <div class="col-md-4 mb-3">
+                <a class="btn btn-primary btn-block">View previous grades</a>
+            </div>
+        }
+        else if (User.IsInRole("Teacher"))
+        {
+            <div class="col-md-6 mb-3">
+                <a class="btn btn-primary btn-block">View previous grades</a>
+            </div>
+            <div class="col-md-6 mb-3">
+                <a class="btn btn-primary btn-block">Upload grades</a>
+            </div>
+        }
+    </div>
 </div>

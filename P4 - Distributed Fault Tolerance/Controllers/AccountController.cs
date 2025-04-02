@@ -53,10 +53,16 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             {
                 var result = JsonConvert.DeserializeObject<TokenResponse>(await response.Content.ReadAsStringAsync());
 
+                var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(result.Token);
+
+                var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, model.Email),
-                    new Claim("Token", result.Token)
+                    new(ClaimTypes.Name, model.Email),
+                    new("Token", result.Token),
+                    new(ClaimTypes.Role, roleClaim.Value)
                 };
 
                 var claimsIdentity = new ClaimsIdentity(claims, "login");
@@ -88,7 +94,7 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             var response = await _httpClient.PostAsync($"{_apiBaseUrl}/register", content);
             if (response.IsSuccessStatusCode)
             {
-                return RedirectToAction("LoginView");
+                return RedirectToAction("Login");
             }
 
             var errorResponse = await response.Content.ReadAsStringAsync();
