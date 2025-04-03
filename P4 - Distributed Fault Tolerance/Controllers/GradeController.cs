@@ -9,7 +9,7 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
     public class GradeController : Controller
     {
         private readonly HttpClient _httpClient;
-        private readonly string _apiBaseUrl = "https://localhost:5003/api/grades"; // Your API endpoint for grades
+        private readonly string _apiBaseUrl = "https://localhost:5003/api/grades";
 
         public GradeController(HttpClient httpClient)
         {
@@ -21,23 +21,20 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
         {
             List<GradeModel> grades = new List<GradeModel>();
             var idNumber = User.Identity.Name;
-            Trace.WriteLine($"IdNumber: {idNumber}"); // Debugging line to check the IdNumber
 
             if (string.IsNullOrEmpty(idNumber))
             {
-                return grades; // or handle the case when IdNumber is null
+                return grades;
             }
 
             // Create the request body
-            var requestBody = new { StudentId = idNumber };
+            var requestBody = new { IdNumber = idNumber };
             var jsonContent = JsonConvert.SerializeObject(requestBody);
-            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-            Trace.WriteLine($"Request Body: {jsonContent}"); // Debugging line to check the request body
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json")
+
             // Send a POST request to get grades
             HttpResponseMessage response = await _httpClient.PostAsync($"{_apiBaseUrl}/getGrades", content);
-            Trace.WriteLine($"HTTP Status: {response.StatusCode}");
-            var responseBody = await response.Content.ReadAsStringAsync();
-            Trace.WriteLine($"Response Content: {responseBody}");
+
             if (response.IsSuccessStatusCode)
             {
                 var jsonData = await response.Content.ReadAsStringAsync();
