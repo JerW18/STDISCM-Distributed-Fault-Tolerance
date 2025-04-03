@@ -1,0 +1,23 @@
+﻿@model List<P4___Distributed_Fault_Tolerance.Models.GradeModel>
+
+<h2>Student's Grades</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID Number</th>
+            <th>Course</th>
+            <th>Grade</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var grade in Model)
+        {
+            <tr>
+                <td>@grade.StudentId</td>
+                <td>@grade.CourseName</td>
+                <td>@grade.GradeValue</td>
+            </tr>
+        }
+    </tbody>
+</table>

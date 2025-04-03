@@ -44,14 +44,41 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             return grades;
         }
 
-
-
         // Action to view grades for a student (current user)
         public async Task<IActionResult> ViewGrades()
         {
             List<GradeModel> grades = await GetGradesAsyncForStudent();
             return View("ViewGrades", grades);
         }
+
+        // Action to view grades for all students
+        private async Task<List<GradeModel>> GetGradesAsyncForAllStudents()
+        {
+            List<GradeModel> grades = new List<GradeModel>();
+
+            // Create the request body (no need for IdNumber here)
+            var requestBody = new { };  // Empty or you could specify teacher-related data
+            var jsonContent = JsonConvert.SerializeObject(requestBody);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            // Send a POST request to get all grades
+            HttpResponseMessage response = await _httpClient.PostAsync($"{_apiBaseUrl}/getAllGrades", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonData = await response.Content.ReadAsStringAsync();
+                grades = JsonConvert.DeserializeObject<List<GradeModel>>(jsonData);
+            }
+
+            return grades;
+        }
+        // Action to view all grades for all students (for the teacher)
+        public async Task<IActionResult> ViewAllGrades()
+        {
+            List<GradeModel> grades = await GetGradesAsyncForAllStudents();
+            return View("ViewAllGrades", grades);  // Make sure your view is named appropriately
+        }
+
     }
 
 }

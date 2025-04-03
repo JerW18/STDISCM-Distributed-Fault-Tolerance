@@ -38,6 +38,20 @@ namespace Grade_Service.Controllers
             return Ok(grades);
         }
 
+        [HttpPost("getAllGrades")]
+        public async Task<IActionResult> GetAllGrades()
+        {
+            var grades = await _context.Grades
+                .ToListAsync();  // Remove the filtering by StudentId
+
+            if (!grades.Any())
+            {
+                return NotFound(new { message = "No grades found." });
+            }
+
+            return Ok(grades);
+        }
+
 
     }
 }
