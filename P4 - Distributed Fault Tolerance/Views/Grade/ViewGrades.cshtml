@@ -2,16 +2,20 @@
 
 <h2>Your Grades</h2>
 
-<table>
-    <tr>
-        <th>Course</th>
-        <th>Grade</th>
-    </tr>
-    @foreach (var grade in Model)
-    {
-        <tr>
-            <td>@grade.CourseName</td>
-            <td>@grade.GradeValue</td>
-        </tr>
-    }
+<table class="table">
+    <thead>
+		<tr>
+			<th>Course</th>
+			<th>Grade</th>
+		</tr>
+    </thead>
+	<tbody>
+        @foreach (var grade in Model)
+        {
+            <tr>
+                <td>@grade.CourseName</td>
+                <td>@grade.GradeValue</td>
+            </tr>
+        }
+	</tbody>
 </table>

@@ -30,7 +30,7 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             // Create the request body
             var requestBody = new { IdNumber = idNumber };
             var jsonContent = JsonConvert.SerializeObject(requestBody);
-            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json")
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
             // Send a POST request to get grades
             HttpResponseMessage response = await _httpClient.PostAsync($"{_apiBaseUrl}/getGrades", content);
