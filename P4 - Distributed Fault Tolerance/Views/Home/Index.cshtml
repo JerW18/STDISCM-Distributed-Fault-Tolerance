@@ -21,10 +21,10 @@
         else if (User.IsInRole("Student"))
         {
             <div class="col-md-4 mb-3">
-                <a class="btn btn-primary btn-block">View available courses</a>
+                <a class="btn btn-primary btn-block" asp-area="" asp-controller="Course" asp-action="ViewCourses">View available courses</a>
             </div>
             <div class="col-md-4 mb-3">
-                <a class="btn btn-primary btn-block">Enroll in open courses</a>
+                <a class="btn btn-primary btn-block" asp-area="" asp-controller="Course" asp-action="ViewEnrollCourse">Enroll in open courses</a>
             </div>
             <div class="col-md-4 mb-3">
                 <a class="btn btn-primary btn-block">View previous grades</a>

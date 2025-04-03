@@ -1,0 +1,31 @@
+﻿@model List<P4___Distributed_Fault_Tolerance.Models.Course>
+
+@{
+    ViewData["Title"] = "Available Courses";
+}
+
+<h2>Available Courses</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Course Code</th>
+            <th>Course Name</th>
+            <th>Section</th>
+            <th>Units</th>
+            <th>Capacity</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var course in Model)
+        {
+            <tr>
+                <td>@course.CourseCode</td>
+                <td>@course.CourseName</td>
+                <td>@course.CourseSection</td>
+                <td>@course.Units</td>
+                <td>@(course.Students?.Count ?? 0) / @course.Capacity</td>
+            </tr>
+        }
+    </tbody>
+</table>

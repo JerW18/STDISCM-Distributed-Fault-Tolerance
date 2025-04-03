@@ -38,11 +38,14 @@ namespace Authentication_Service.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            var user = await _userManager.FindByNameAsync(model.Email);
+            var user = await _userManager.FindByEmailAsync(model.Email);
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
                 var token = GenerateJwtToken(user);
-                return Ok(new { token });
+                return Ok(new { 
+                    token,
+                    user.IdNumber
+                });
             }
             return Unauthorized(new { message = "Invalid email or password." });
         }
@@ -54,6 +57,7 @@ namespace Authentication_Service.Controllers
 
             var claims = new List<Claim>
             {
+                new Claim("IdNumber", user.IdNumber),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
