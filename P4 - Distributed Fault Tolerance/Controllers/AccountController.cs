@@ -11,28 +11,36 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
     public class AccountController : Controller
     {
         private readonly HttpClient _httpClient;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        private readonly string _apiBaseUrl = "https://localhost:5001/api/auth";
+        private readonly string _apiBaseUrl; // = "https://localhost:5001/api/auth";
 
-        public AccountController(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
+        public AccountController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
-            _httpClient = httpClient;
-            _httpContextAccessor = httpContextAccessor;
+            _httpClientFactory = httpClientFactory;
+            _apiBaseUrl = configuration["ApiSettings:AuthBaseUrl"] ?? "https://localhost:5001/api/auth";
+            _httpClient = _httpClientFactory.CreateClient("ApiClient");
         }
-
-        public IActionResult LoginView() => View();
-        public IActionResult Register() => View();
 
         [HttpGet]
         public IActionResult Login()
         {
-            if (User.Identity.IsAuthenticated)
+            // Check if user is already authenticated via the cookie scheme
+            if (User.Identity?.IsAuthenticated == true)
             {
                 return RedirectToAction("Index", "Home");
             }
+            return View(); // Assuming LoginView.cshtml exists
+        }
 
-            return View(); 
+        [HttpGet]
+        public IActionResult Register()
+        {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            return View(); // Assuming Register.cshtml exists
         }
 
         [HttpPost]

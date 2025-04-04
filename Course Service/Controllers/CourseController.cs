@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Course_Service.Data;
 using Course_Service.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

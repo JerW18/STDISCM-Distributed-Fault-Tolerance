@@ -7,5 +7,7 @@ namespace Authentication_Service.Data
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+
+        public DbSet<RefreshTokenModel> RefreshTokens { get; set; }
     }
 }
