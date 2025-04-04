@@ -1,0 +1,39 @@
+﻿@model List<P4___Distributed_Fault_Tolerance.Models.GradeModel>
+
+<h2>Student's Grades</h2>
+
+<input type="text" id="courseFilter" placeholder="Search by course name..." style="width: 100%;" />
+
+<table class="table" id="gradesTable">
+    <thead>
+        <tr>
+            <th>ID Number</th>
+            <th>Course</th>
+            <th>Grade</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var grade in Model)
+        {
+            <tr>
+                <td>@grade.StudentId</td>
+                <td>@grade.CourseName</td>
+                <td>@grade.GradeValue</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function(){
+        $("#courseFilter").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#gradesTable tbody tr").filter(function() {
+                // Assuming the course name is in the second cell (index 1)
+                var courseName = $(this).find("td").eq(1).text().toLowerCase();
+                $(this).toggle(courseName.indexOf(value) > -1);
+            });
+        });
+    });
+</script>

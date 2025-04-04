@@ -33,7 +33,7 @@
         else if (User.IsInRole("Teacher"))
         {
             <div class="col-md-6 mb-3">
-                <a class="btn btn-primary btn-block">View previous grades</a>
+                <a class="btn btn-primary btn-block" asp-area="" asp-controller="Grade" asp-action="ViewAllGrades">View student's grades</a>
             </div>
             <div class="col-md-6 mb-3">
                 <a class="btn btn-primary btn-block">Upload grades</a>
