@@ -3,7 +3,9 @@ using Grade_Service.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Grade_Service.Controllers
 {
@@ -20,27 +22,140 @@ namespace Grade_Service.Controllers
             _httpClientFactory = httpClientFactory;
         }
 
+        [HttpPost("getAllGradesProf")]
+        public async Task<IActionResult> GetAllGradesAsyncProf([FromBody] ViewGradeRequest viewGradeRequest)
+        {
+            if (string.IsNullOrEmpty(viewGradeRequest.IdNumber))
+            {
+                return BadRequest(new { message = "Professor ID is required." });
+            }
+
+            using var profClient = _httpClientFactory.CreateClient();
+            profClient.BaseAddress = new Uri("https://localhost:5002"); // Course Service URL
+
+            var courseIdsTheProfTeaches = await profClient.GetFromJsonAsync<List<int>>($"/api/course/profclass/{viewGradeRequest.IdNumber}");
+
+            if (courseIdsTheProfTeaches == null || !courseIdsTheProfTeaches.Any())
+            {
+                return NotFound(new { message = "No courses found for the specified professor." });
+            }
+
+            var courseIdStrings = courseIdsTheProfTeaches.Select(id => id.ToString()).ToList();
+
+            // Fetch existing grades for the professor's courses
+            var existingGradePairs = await _context.Grades
+                .Where(g => courseIdStrings.Contains(g.CourseId))
+                .Select(g => new { g.StudentId, g.CourseId })
+                .ToListAsync();
+
+            var existingGradeSet = new HashSet<Tuple<string, string>>(); // Note: Both are strings now
+            foreach (var pair in existingGradePairs)
+            {
+                existingGradeSet.Add(Tuple.Create(pair.StudentId, pair.CourseId));
+            }
+
+            var studentCourseList = new List<object>();
+
+            foreach (var courseId in courseIdsTheProfTeaches)
+            {
+                try
+                {
+                    var course = await profClient.GetFromJsonAsync<Course>($"/api/course/findcourse/{courseId}");
+
+                    if (course != null)
+                    {
+                        foreach (var studentId in course.Students)
+                        {
+                            var gradeKey = Tuple.Create(studentId, courseId.ToString());
+                            if (existingGradeSet.Contains(gradeKey))
+                            {
+                                continue; // Skip if grade exists
+                            }
+
+                            using var authClient = _httpClientFactory.CreateClient();
+                            authClient.BaseAddress = new Uri("https://localhost:5001"); // Auth Service URL
+                            var student = await authClient.GetFromJsonAsync<StudentDto>($"/api/auth/students/{studentId}");
+
+                            studentCourseList.Add(new
+                            {
+                                StudentId = studentId,
+                                FirstName = student?.FirstName,
+                                LastName = student?.LastName,
+                                CourseCode = course.CourseCode,
+                                CourseId = course.CourseId
+                            });
+                        }
+                    }
+                    else
+                    {
+                        studentCourseList.Add(new
+                        {
+                            StudentId = "N/A",
+                            FirstName = "N/A",
+                            LastName = "N/A",
+                            CourseCode = "N/A",
+                            CourseId = courseId
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    studentCourseList.Add(new
+                    {
+                        StudentId = "N/A",
+                        FirstName = "N/A",
+                        LastName = "N/A",
+                        CourseCode = "N/A",
+                        CourseId = courseId
+                    });
+                }
+            }
+
+            return Ok(studentCourseList);
+        }
+        public class Course
+        {
+            public int CourseId { get; set; }
+            public string CourseCode { get; set; }
+            public string CourseName { get; set; }
+            public string CourseSection { get; set; }
+            public int Units { get; set; }
+            public int Capacity { get; set; }
+            public List<string> Students { get; set; }  // Assuming Students is a list of student IDs
+            public string ProfId { get; set; }
+        }
+
+        public class GradeDto
+        {
+            public string StudentId { get; set; }
+            public string CourseId { get; set; }
+            public string Grade { get; set; }
+        }
+
+        [HttpPost("UploadGradeToDB")]
+        public async Task<IActionResult> UploadGradeToDB([FromBody] GradeDto payload)
+        {
+            if (payload == null || string.IsNullOrEmpty(payload.StudentId)
+                || string.IsNullOrEmpty(payload.CourseId) || string.IsNullOrEmpty(payload.Grade))
+            {
+                return BadRequest("Invalid payload");
+            }
+
+            var newGrade = new GradeModel
+            {
+                StudentId = payload.StudentId,
+                CourseId = payload.CourseId,
+                GradeValue = payload.Grade // Ensure property name matches your model
+            };
+
+            await _context.Grades.AddAsync(newGrade);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
 
 
-        //[HttpPost("getGrades")]
-        //public async Task<IActionResult> GetGrades([FromBody] ViewGradeRequest viewGradeRequest)
-        //{
-        //    if (string.IsNullOrEmpty(viewGradeRequest.IdNumber))
-        //    {
-        //        return BadRequest(new { message = "Student ID is required." });
-        //    }
 
-        //    var grades = await _context.Grades
-        //        .Where(g => g.StudentId == viewGradeRequest.IdNumber)
-        //        .ToListAsync();
-
-        //    if (!grades.Any())
-        //    {
-        //        return NotFound(new { message = "No grades found for this student." });
-        //    }
-
-        //    return Ok(grades);
-        //}
 
         [HttpPost("getGrades")]
         public async Task<IActionResult> GetGrades([FromBody] ViewGradeRequest viewGradeRequest)
