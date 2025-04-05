@@ -54,8 +54,15 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
         private async Task<List<GradeModel>> GetGradesAsyncForAllStudents()
         {
             List<GradeModel> grades = new List<GradeModel>();
+            var idNumber = User.Identity.Name;
 
-            var requestBody = new { }; 
+            if (string.IsNullOrEmpty(idNumber))
+            {
+                return grades;
+            }
+
+            // Create the request body
+            var requestBody = new { IdNumber = idNumber };
             var jsonContent = JsonConvert.SerializeObject(requestBody);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 

@@ -2,6 +2,7 @@
 using Course_Service.Data;
 using Course_Service.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +10,7 @@ namespace Course_Service.Controllers
 {
     [Route("api/course")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class CourseController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -17,6 +18,33 @@ namespace Course_Service.Controllers
         public CourseController(ApplicationDbContext context)
         {
             _context = context;
+        }
+        [HttpGet("coursename/{courseName}")]
+        public IActionResult GetCourseName(string courseName)
+        {
+            // Logging to confirm the method is reached
+            Trace.WriteLine($"Searching for course with name: {courseName}");
+
+            // Handle case-insensitive search (optional, depending on your needs)
+            var FullCourseName = _context.Courses
+                .FirstOrDefault(s => s.CourseId.ToString().ToLower() == courseName.Trim().ToLower());
+
+            var courseFromDb = _context.Courses.FirstOrDefault();
+            Trace.WriteLine($"Stored course name: '{courseFromDb?.CourseName}'");
+
+            if (FullCourseName == null)
+            {
+                Trace.WriteLine($"Course with name {courseName} not found");
+                return NotFound(new { message = "Course not found" });
+            }
+
+            return Ok(new
+            {
+                FullCourseName.CourseName,
+                FullCourseName.CourseCode
+
+            });
+
         }
 
         [HttpGet]
@@ -68,5 +96,25 @@ namespace Course_Service.Controllers
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetCourses), new { id = course.CourseId }, course);
         }
+
+        [HttpGet("profclass/{profId}")]
+        public IActionResult GetProfClasses(string profId)
+        {
+            Trace.WriteLine($"Searching for course with profId: {profId}");
+
+            var allClasses = _context.Courses
+                .Where(s => s.ProfId == profId)
+                .Select(c => c.CourseId.ToString()) // Ensure CourseId is a string
+                .ToList();
+
+            if (!allClasses.Any())
+            {
+                Trace.WriteLine($"No courses found for professor {profId}");
+                return NotFound(new { message = "No courses found." });
+            }
+
+            return Ok(allClasses);
+        }
+
     }
 }
