@@ -1,7 +1,20 @@
 ﻿@model List<P4___Distributed_Fault_Tolerance.Models.Course>
-
+<style>
+    .btn {
+        border: none;
+        outline: none;
+        background: linear-gradient(90deg, #087830, #005f29);
+        padding: .375rem .75rem;
+        border-radius: 10px;
+        color: white;
+        font-size: 1rem;
+        text-decoration: none;
+        line-height: 1.5;
+        font-weight: 400;
+    }
+</style>
 <h2>Enroll in Courses</h2>
-<table class="table">
+<table class="table table-striped">
     <thead>
         <tr>
             <th>Course Code</th>
@@ -24,7 +37,7 @@
                 <td>
                     <form asp-controller="Course" asp-action="EnrollStudent" method="post">
                         <input type="hidden" name="CourseId" value="@course.CourseId" />
-                        <button type="submit" class="btn btn-primary">Enroll</button>
+                        <button type="submit" class="btn">Enroll</button>
                     </form>
                 </td>
             </tr>

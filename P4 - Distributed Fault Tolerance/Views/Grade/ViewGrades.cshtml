@@ -2,14 +2,14 @@
 
 <h2>Your Grades</h2>
 
-<table class="table">
+<table class="table table-striped">
     <thead>
-		<tr>
-			<th>Course</th>
-			<th>Grade</th>
-		</tr>
+        <tr>
+            <th>Course Code</th>
+            <th>Grade</th>
+        </tr>
     </thead>
-	<tbody>
+    <tbody>
         @foreach (var grade in Model)
         {
             <tr>
@@ -17,5 +17,5 @@
                 <td>@grade.GradeValue</td>
             </tr>
         }
-	</tbody>
+    </tbody>
 </table>
