@@ -2,40 +2,201 @@
 @{
     ViewData["Title"] = "Register";
 }
-<h2>Register</h2>
 
-<form asp-action="Register" method="post">
-    <div asp-validation-summary="All" class="text-danger"></div>
+<style>
+    .wrapper {
+        overflow: hidden;
+        max-width: 390px;
+        background: #fff;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 1px 1px 2rem rgba(0, 0, 0, 0.3);
+        margin: 0 auto;
+    }
 
-    <label>First Name</label>
-    <input asp-for="FirstName" class="form-control" />
+        .wrapper .title-text {
+            display: flex;
+            width: 200%;
+        }
 
-    <label>Last Name</label>
-    <input asp-for="LastName" class="form-control" />
-    
-    <label>ID Number</label>
-    <input asp-for="IdNumber" class="form-control" />
+        .wrapper .title {
+            width: 50%;
+            font-size: 35px;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.6s cubic-bezier(0.68,-0.55,0.265,1.55);
+        }
 
-    <label>Email</label>
-    <input asp-for="Email" type="email" class="form-control" />
+        .wrapper .form-container {
+            width: 100%;
+            overflow: hidden;
+        }
 
-    <label>Password</label>
-    <input asp-for="Password" type="password" class="form-control" />
+    .form-container .form-inner {
+        display: flex;
+        width: 200%;
+    }
 
-    <label>Confirm Password</label>
-    <input asp-for="ConfirmPassword" type="password" class="form-control" />
+        .form-container .form-inner form {
+            width: 50%;
+            transition: all 0.6s cubic-bezier(0.68,-0.55,0.265,1.55);
+        }
 
-    <label>Role</label>
-    <select asp-for="Role" class="form-control">
-        <option value="Student">Student</option>
-        <option value="Teacher">Teacher</option>
-        <option value="Admin">Admin</option>
-    </select>
+    .form-inner form .field {
+        height: 50px;
+        width: 100%;
+        margin-top: 15px;
+    }
 
-    <button type="submit" class="btn btn-primary">Register</button>
-</form>
+        .form-inner form .field input {
+            height: 100%;
+            width: 100%;
+            outline: none;
+            padding-left: 15px;
+            border-radius: 15px;
+            border: 1px solid lightgrey;
+            border-bottom-width: 2px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+            .form-inner form .field input:focus {
+                border-color: #087830;
+            }
+
+            .form-inner form .field input::placeholder {
+                color: #999;
+                transition: all 0.3s ease;
+            }
+
+    form .field input:focus::placeholder {
+        color: #087830;
+    }
+
+    form .btn {
+        height: 50px;
+        width: 100%;
+        border-radius: 15px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        form .btn .btn-layer {
+            height: 100%;
+            width: 300%;
+            position: absolute;
+            left: -100%;
+            background: linear-gradient(90deg, #087830, #005f29);
+            box-shadow: 1px 10px 2rem rgba(8, 120, 48, 0.5);
+            transition: all 0.2s ease-in;
+            border-radius: 15px;
+        }
+
+        form .btn:hover .btn-layer {
+            left: 0;
+        }
+
+        form .btn input[type="submit"] {
+            height: 100%;
+            width: 100%;
+            z-index: 1;
+            position: relative;
+            background: none;
+            border: none;
+            color: #fff;
+            padding-left: 0;
+            border-radius: 15px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+    .combine-row {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    form .field select {
+        height: 50px;
+        width: 100%;
+        outline: none;
+        padding-left: 15px;
+        border-radius: 15px;
+        border: 1px solid lightgrey;
+        border-bottom-width: 2px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+    }
+
+        form .field select:focus {
+            border-color: #087830;
+        }
+
+        form .field select option {
+            color: #999;
+            transition: all 0.3s ease;
+        }
+
+        form .field select:focus option {
+            color: #000;
+        }
+
+        form .field select option:disabled {
+            color: #ccc;
+        }
+</style>
+<div class="wrapper">
+    <div class="title-text">
+        <div class="title signup">Register</div>
+    </div>
+    <div class="form-container">
+        <div class="form-inner">
+            <form asp-action="Register" method="post" class="signup">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                <div class="field">
+                    <select asp-for="Role" name="role" id="role" required>
+                        <option value="" disabled selected>Select your role</option>
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="combine-row">
+                    <div class="field">
+                        <input type="text" asp-for="FirstName" placeholder="First Name" required>
+                    </div>
+                    <div class="field">
+                        <input type="text" asp-for="LastName" placeholder="Last Name" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <input type="text" asp-for="IdNumber" placeholder="ID Number" required>
+                </div>
+                <div class="field">
+                    <input type="email" asp-for="Email" placeholder="Email" required>
+                </div>
+                <div class="combine-row">
+                    <div class="field">
+                        <input type="password" asp-for="Password" placeholder="Password" required>
+                    </div>
+                    <div class="field">
+                        <input type="password" asp-for="ConfirmPassword" placeholder="Confirm password" required>
+                    </div>
+                </div>
+                <div class="field btn">
+                    <div class="btn-layer"></div>
+                    <input type="submit" value="Register">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
-    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
 

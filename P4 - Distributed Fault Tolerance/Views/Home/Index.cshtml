@@ -1,43 +1,121 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
-<div class="container mt-4">
-    <div class="row">
-        @if (User.IsInRole("Admin"))
-        {
-            <div class="col-md-3 mb-3">
-                <a class="btn btn-primary btn-block">View available courses</a>
-            </div>
-            <div class="col-md-3 mb-3">
-                <a class="btn btn-primary btn-block">Enroll in open courses</a>
-            </div>
-            <div class="col-md-3 mb-3">
-                <a class="btn btn-primary btn-block">View previous grades</a>
-            </div>
-            <div class="col-md-3 mb-3">
-                <a class="btn btn-primary btn-block">Upload grades</a>
-            </div>
+<style>
+    .blog_post {
+        background: #fff;
+        width: 230px;
+        border-radius: 10px;
+        box-shadow: 1px 1px 2rem rgba(0, 0, 0, 0.3);
+        position: relative;
+    }
+
+    .container_copy {
+        padding: 60px 40px 50px 40px;
+    }
+
+    h1 {
+        margin: 0 0 1rem 0;
+        font-size: 30px;
+        letter-spacing: 0.5px;
+        color: #333;
+        padding-bottom: 25px;
+        height: 125px;
+    }
+
+    .btn {
+        border: none;
+        outline: none;
+        background: linear-gradient(90deg, #087830, #005f29);
+        padding: 15px 20px;
+        border-radius: 50px;
+        color: white;
+        font-size: 15px;
+        box-shadow: 1px 10px 2rem rgba(8, 120, 48, 0.5);
+        transition: all 0.2s ease-in;
+        text-decoration: none;
+    }
+
+        .btn:hover {
+            box-shadow: 0px 5px 1rem rgba(8, 120, 48, 0.5);
         }
-        else if (User.IsInRole("Student"))
-        {
-            <div class="col-md-4 mb-3">
-                <a class="btn btn-primary btn-block" asp-area="" asp-controller="Course" asp-action="ViewCourses">View available courses</a>
+
+    .outer_container {
+        display: flex;
+        flex-direction: row;
+        gap: 30px;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        margin: 30px;
+    }
+</style>
+@if (User.IsInRole("Admin"))
+{
+    <div class="outer_container">
+        <div class="blog_post">
+            <div class="container_copy">
+                <h1>View available courses</h1>
+                <a class="btn">Open</a>
             </div>
-            <div class="col-md-4 mb-3">
-                <a class="btn btn-primary btn-block" asp-area="" asp-controller="Course" asp-action="ViewEnrollCourse">Enroll in open courses</a>
+        </div>
+        <div class="blog_post">
+            <div class="container_copy">
+                <h1>Enroll students in courses</h1>
+                <a class="btn">Open</a>
             </div>
-            <div class="col-md-4 mb-3">
-                <a class="btn btn-primary btn-block" asp-area="" asp-controller="Grade" asp-action="ViewGrades">View previous grades</a>
+        </div>
+        <div class="blog_post">
+            <div class="container_copy">
+                <h1>View student's grades</h1>
+                <a class="btn">Open</a>
             </div>
-        }
-        else if (User.IsInRole("Teacher"))
-        {
-            <div class="col-md-6 mb-3">
-                <a class="btn btn-primary btn-block" asp-area="" asp-controller="Grade" asp-action="ViewAllGrades">View student's grades</a>
+        </div>
+        <div class="blog_post">
+            <div class="container_copy">
+                <h1>Upload grades</h1>
+                <a class="btn">Open</a>
             </div>
-            <div class="col-md-6 mb-3">
-                <a class="btn btn-primary btn-block">Upload grades</a>
-            </div>
-        }
+        </div>
     </div>
-</div>
+}
+else if (User.IsInRole("Student"))
+{
+    <div class="outer_container">
+        <div class="blog_post">
+            <div class="container_copy">
+                <h1>View available courses</h1>
+                <a asp-area="" asp-controller="Course" asp-action="ViewCourses" class="btn">Open</a>
+            </div>
+        </div>
+        <div class="blog_post">
+            <div class="container_copy">
+                <h1>Enroll in open courses</h1>
+                <a asp-area="" asp-controller="Course" asp-action="ViewEnrollCourse" class="btn">Open</a>
+            </div>
+        </div>
+        <div class="blog_post">
+            <div class="container_copy">
+                <h1>View previous grades</h1>
+                <a asp-area="" asp-controller="Grade" asp-action="ViewGrades" class="btn">Open</a>
+            </div>
+        </div>
+    </div>
+}
+else if (User.IsInRole("Teacher"))
+{
+    <div class="outer_container">
+        <div class="blog_post">
+            <div class="container_copy">
+                <h1>View student's grades</h1>
+                <a asp-area="" asp-controller="Grade" asp-action="ViewAllGrades" class="btn">Open</a>
+            </div>
+        </div>
+        <div class="blog_post">
+            <div class="container_copy">
+                <h1>Upload grades</h1>
+                <a class="btn">Open</a>
+            </div>
+        </div>
+    </div>
+}
