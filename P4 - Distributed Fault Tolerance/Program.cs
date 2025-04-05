@@ -1,6 +1,5 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using System.Net.Http.Headers;
+using P4___Distributed_Fault_Tolerance.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,27 +18,43 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddTransient<AuthTokenHandler>();
+builder.Services.AddTransient<TokenRefreshHandler>();
 
-builder.Services.AddHttpClient("ApiClient", client =>
+builder.Services.AddHttpClient("AuthApiClient", client =>
 {
-    // Configure BaseAddress if your API has one
-    var apiBaseUrl = builder.Configuration["ApiSettings:AuthBaseUrl"]; // Example config key
-    if (!string.IsNullOrEmpty(apiBaseUrl) && Uri.TryCreate(apiBaseUrl, UriKind.Absolute, out var baseUri))
-    {
-        // Set base address only if it's well-formed
-        // client.BaseAddress = baseUri; // Or maybe just the host part depending on usage
-    }
+    var authApiBaseUrl = builder.Configuration["ApiSettings:AuthBaseUrl"];
+    client.BaseAddress = new Uri(authApiBaseUrl);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
+builder.Services.AddHttpClient("CourseApiClient", client =>
+{
+    var courseApiBaseUrl = builder.Configuration["ApiSettings:CourseBaseUrl"]; 
+    client.BaseAddress = new Uri(courseApiBaseUrl);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 })
-.AddHttpMessageHandler<AuthTokenHandler>();
+.AddHttpMessageHandler<TokenRefreshHandler>();
 
+builder.Services.AddHttpClient("GradeApiClient", client => 
+{
+    var gradeApiBaseUrl = builder.Configuration["ApiSettings:GradeBaseUrl"];
+    client.BaseAddress = new Uri(gradeApiBaseUrl); 
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+})
+.AddHttpMessageHandler<TokenRefreshHandler>();
+
+builder.Services.AddHttpClient("RefreshClient", client =>
+{
+    var authApiBaseUrl = builder.Configuration["ApiSettings:AuthBaseUrl"];
+    client.BaseAddress = new Uri(authApiBaseUrl);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
 
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.IdleTimeout = TimeSpan.FromMinutes(60);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
@@ -66,44 +81,3 @@ app.MapControllerRoute(
     pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();
-
-
-// --- DelegatingHandler Implementation (Place in a separate file, e.g., Handlers/AuthTokenHandler.cs) ---
-
-public class AuthTokenHandler : DelegatingHandler
-{
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public AuthTokenHandler(IHttpContextAccessor httpContextAccessor)
-    {
-        _httpContextAccessor = httpContextAccessor;
-    }
-
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-    {
-        // Try to get the access token associated with the current user's cookie session
-        var httpContext = _httpContextAccessor.HttpContext;
-        if (httpContext != null)
-        {
-            // Ensure user is authenticated within the MVC app via cookie
-            if (httpContext.User.Identity?.IsAuthenticated ?? false)
-            {
-                var accessToken = await httpContext.GetTokenAsync("access_token");
-
-                if (!string.IsNullOrEmpty(accessToken))
-                {
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                }
-            }
-        }
-        // Else: Handle cases where HttpContext might be null if used outside a request scope (less common for user-triggered API calls)
-
-
-        // Proceed sending the request (now with the token if available)
-        return await base.SendAsync(request, cancellationToken);
-
-        // NOTE: Full refresh token logic is more complex.
-        // You would catch a 401 response here, attempt refresh using GetTokenAsync("refresh_token"),
-        // update stored tokens, and retry the request. This handler only adds the existing token.
-    }
-}

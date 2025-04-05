@@ -10,18 +10,17 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
     [Authorize]
     public class CourseController : Controller
     {
-        private readonly HttpClient _httpClient;
-        private readonly string _apiBaseUrl = "https://localhost:5002/api/course";
+        private readonly HttpClient _courseClient;
 
-        public CourseController(HttpClient httpClient)
+        public CourseController(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
+            _courseClient = httpClientFactory.CreateClient("CourseApiClient");
         }
 
         private async Task<List<Course>> GetCoursesAsync()
         {
             List<Course> courses = new List<Course>();
-            HttpResponseMessage response = await _httpClient.GetAsync($"{_apiBaseUrl}/getCourses");
+            HttpResponseMessage response = await _courseClient.GetAsync("getCourses");
             if (response.IsSuccessStatusCode)
             {
                 var jsonData = await response.Content.ReadAsStringAsync();
@@ -52,7 +51,7 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             var json = JsonConvert.SerializeObject(new { CourseId = courseId, IdNumber = idNumber });
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync($"{_apiBaseUrl}/enrollStudent", content);
+            var response = await _courseClient.PostAsync("enrollStudent", content);
 
             if (response.IsSuccessStatusCode)
             {

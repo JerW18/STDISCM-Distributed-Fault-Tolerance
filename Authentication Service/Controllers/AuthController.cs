@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Authentication_Service.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Authentication_Service.Controllers
 {
@@ -17,15 +18,15 @@ namespace Authentication_Service.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _config;
-        private readonly ApplicationDbContext _context;
 
-        public AuthController(UserManager<ApplicationUser> userManager, IConfiguration config, ApplicationDbContext context)
+
+        public AuthController(UserManager<ApplicationUser> userManager, IConfiguration config)
         {
             _userManager = userManager;
             _config = config;
-            _context = context;
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
@@ -36,8 +37,7 @@ namespace Authentication_Service.Controllers
                 IdNumber = model.IdNumber,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                RefreshToken = GenerateRefreshToken(),
-                RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30)
+                RefreshToken = string.Empty,
             };
             var result = await _userManager.CreateAsync(user, model.Password);
 
@@ -49,6 +49,7 @@ namespace Authentication_Service.Controllers
             return BadRequest(result.Errors);
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
@@ -59,7 +60,7 @@ namespace Authentication_Service.Controllers
 
                 var refreshToken = GenerateRefreshToken();
                 user.RefreshToken = refreshToken;
-                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(30);
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddHours(1);
                 await _userManager.UpdateAsync(user);
 
                 return Ok(new { token, refreshToken });
@@ -67,19 +68,18 @@ namespace Authentication_Service.Controllers
             return Unauthorized(new { message = "Invalid email or password." });
         }
 
-        private async Task<string> GenerateJwtTokenAsync(ApplicationUser user) // Make async
+        private async Task<string> GenerateJwtTokenAsync(ApplicationUser user)
         {
             var jwtSettings = _config.GetSection("Jwt");
             var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new(ClaimTypes.NameIdentifier, user.Id),
+                new(ClaimTypes.Email, user.Email),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            // Use await here!
             var userRoles = await _userManager.GetRolesAsync(user);
             foreach (var role in userRoles)
             {
@@ -92,7 +92,7 @@ namespace Authentication_Service.Controllers
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(10),
+                expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: creds
             );
 
@@ -104,6 +104,7 @@ namespace Authentication_Service.Controllers
             return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
         }
 
+        [Authorize]
         [HttpPost("refresh")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenModel model)
         {
@@ -118,7 +119,7 @@ namespace Authentication_Service.Controllers
             var newRefreshToken = GenerateRefreshToken();
 
             user.RefreshToken = newRefreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddHours(1);
             await _userManager.UpdateAsync(user);
 
             return Ok(new { token = newToken, refreshToken = newRefreshToken });

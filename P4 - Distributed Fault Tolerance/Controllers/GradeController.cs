@@ -8,12 +8,11 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
 {
     public class GradeController : Controller
     {
-        private readonly HttpClient _httpClient;
-        private readonly string _apiBaseUrl = "https://localhost:5003/api/grades";
+        private readonly HttpClient _gradeClient;
 
-        public GradeController(HttpClient httpClient)
+        public GradeController(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
+            _gradeClient = httpClientFactory.CreateClient("GradeApiClient");
         }
 
         // This method fetches grades for a specific student
@@ -33,7 +32,7 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
             // Send a POST request to get grades
-            HttpResponseMessage response = await _httpClient.PostAsync($"{_apiBaseUrl}/getGrades", content);
+            HttpResponseMessage response = await _gradeClient.PostAsync("getGrades", content);
 
             if (response.IsSuccessStatusCode)
             {
@@ -56,13 +55,11 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
         {
             List<GradeModel> grades = new List<GradeModel>();
 
-            // Create the request body (no need for IdNumber here)
-            var requestBody = new { };  // Empty or you could specify teacher-related data
+            var requestBody = new { }; 
             var jsonContent = JsonConvert.SerializeObject(requestBody);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-            // Send a POST request to get all grades
-            HttpResponseMessage response = await _httpClient.PostAsync($"{_apiBaseUrl}/getAllGrades", content);
+            HttpResponseMessage response = await _gradeClient.PostAsync("getAllGrades", content);
 
             if (response.IsSuccessStatusCode)
             {
@@ -72,11 +69,12 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
 
             return grades;
         }
+
         // Action to view all grades for all students (for the teacher)
         public async Task<IActionResult> ViewAllGrades()
         {
             List<GradeModel> grades = await GetGradesAsyncForAllStudents();
-            return View("ViewAllGrades", grades);  // Make sure your view is named appropriately
+            return View("ViewAllGrades", grades); 
         }
 
     }

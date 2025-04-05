@@ -10,16 +10,13 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly HttpClient _httpClient;
+        private readonly HttpClient _authClient;
         private readonly IHttpClientFactory _httpClientFactory;
-
-        private readonly string _apiBaseUrl; // = "https://localhost:5001/api/auth";
 
         public AccountController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _httpClientFactory = httpClientFactory;
-            _apiBaseUrl = configuration["ApiSettings:AuthBaseUrl"] ?? "https://localhost:5001/api/auth";
-            _httpClient = _httpClientFactory.CreateClient("ApiClient");
+            _authClient = _httpClientFactory.CreateClient("AuthApiClient");
         }
 
         [HttpGet]
@@ -52,29 +49,47 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             var json = JsonConvert.SerializeObject(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync($"{_apiBaseUrl}/login", content);
+            var response = await _authClient.PostAsync("login", content);
 
             if (response.IsSuccessStatusCode)
             {
-                var result = JsonConvert.DeserializeObject<TokenResponse>(await response.Content.ReadAsStringAsync());
+                var responseBody = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<RefreshTokenResponse>(await response.Content.ReadAsStringAsync());
+
+                if (string.IsNullOrEmpty(result?.Token) || string.IsNullOrEmpty(result.RefreshToken))
+                {
+                    ModelState.AddModelError("", "Invalid token response received from API.");
+                    return View(model);
+                }
 
                 var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadJwtToken(result.Token);
 
-                var idNumberClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "IdNumber");
-                var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+                var idNumberClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+                var roleClaim = jwtToken.Claims.Where(c => c.Type == ClaimTypes.Role).ToList();
 
                 var claims = new List<Claim>
                 {
                     new(ClaimTypes.Name, idNumberClaim.Value),
-                    new("Token", result.Token),
-                    new(ClaimTypes.Role, roleClaim.Value)
+
+                    new("AccessToken", result.Token),
+                    new("RefreshToken", result.RefreshToken)
                 };
 
-                var claimsIdentity = new ClaimsIdentity(claims, "login");
+                claims.AddRange(roleClaim);
+
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-                await _httpContextAccessor.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+                var authProperties = new AuthenticationProperties
+                {
+                    IsPersistent = false,
+                };
+
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme, 
+                    claimsPrincipal,
+                    authProperties);
 
                 return RedirectToAction("Index", "Home");
             }
@@ -97,7 +112,7 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             var json = JsonConvert.SerializeObject(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync($"{_apiBaseUrl}/register", content);
+            var response = await _authClient.PostAsync("register", content);
             if (response.IsSuccessStatusCode)
             {
                 return RedirectToAction("Login");
@@ -130,7 +145,7 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
 
         public async Task<IActionResult> Logout()
         {
-            await _httpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login");
         }
     }
