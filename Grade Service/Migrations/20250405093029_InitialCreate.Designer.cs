@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Grade_Service.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250403092128_InitialCreate")]
+    [Migration("20250405093029_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

@@ -22,26 +22,26 @@ namespace Course_Service.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("capacity")
+                    b.Property<int>("Capacity")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("courseCode")
+                    b.Property<string>("CourseCode")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("courseName")
+                    b.Property<string>("CourseName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("courseSection")
+                    b.Property<string>("CourseSection")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.PrimitiveCollection<string>("students")
+                    b.PrimitiveCollection<string>("Students")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("units")
+                    b.Property<int>("Units")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("CourseId");

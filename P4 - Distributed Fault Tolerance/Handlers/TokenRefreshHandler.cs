@@ -6,6 +6,9 @@ using System.Net.Http.Headers;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
+using System.Diagnostics;
+using System.Globalization;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace P4___Distributed_Fault_Tolerance.Handlers
 {
@@ -13,16 +16,13 @@ namespace P4___Distributed_Fault_Tolerance.Handlers
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly string _apiBaseUrl;
 
-        // Use a dedicated client name for the refresh call to avoid handler loop
         private const string RefreshClientName = "RefreshClient";
 
         public TokenRefreshHandler(IHttpContextAccessor httpContextAccessor, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _httpContextAccessor = httpContextAccessor;
             _httpClientFactory = httpClientFactory;
-            _apiBaseUrl = configuration["ApiSettings:AuthBaseUrl"] ?? "https://localhost:5001/api/auth"; // Ensure this matches
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -30,46 +30,82 @@ namespace P4___Distributed_Fault_Tolerance.Handlers
             var context = _httpContextAccessor.HttpContext;
             var accessToken = context?.User?.FindFirst("AccessToken")?.Value;
 
-            // Add current access token to outgoing request if available
             if (!string.IsNullOrEmpty(accessToken))
             {
+                try
+                {
+                    var handler = new JwtSecurityTokenHandler();
+
+                    // Read the token without validating the signature (we just want to read claims)
+                    // This will throw an exception if the token string is not a valid JWT format.
+                    var jwtToken = handler.ReadJwtToken(accessToken);
+
+                    // Find the expiration claim (standard claim name is "exp")
+                    var expiryClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == JwtRegisteredClaimNames.Exp); // "exp"
+
+                    if (expiryClaim != null && long.TryParse(expiryClaim.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out long epochSeconds))
+                    {
+                        // Convert the Unix epoch seconds to a DateTimeOffset
+                        var expiryTime = DateTimeOffset.FromUnixTimeSeconds(epochSeconds);
+
+                        // Get the current UTC time
+                        var currentTime = DateTimeOffset.UtcNow;
+
+                        // Compare
+                        bool isExpired = currentTime >= expiryTime;
+
+                        Trace.WriteLine($"Access Token Expiry Claim ('exp'): {expiryClaim.Value} (Epoch Seconds)");
+                        Trace.WriteLine($"Access Token Expires At (UTC): {expiryTime:o}"); // 'o' format is ISO 8601
+                        Trace.WriteLine($"Current UTC Time: {currentTime:o}");
+                        Trace.WriteLine($"Access Token Is Expired: {isExpired}");
+
+                        // You can now use the 'isExpired' boolean or 'expiryTime' DateTimeOffset
+                        // Example: Check if it expires within the next minute
+                        if (!isExpired && expiryTime < currentTime.AddMinutes(1))
+                        {
+                            Trace.WriteLine("Access Token expires within the next minute.");
+                        }
+                    }
+                    else
+                    {
+                        Trace.WriteLine("Access Token does not contain a valid 'exp' (expiration) claim.");
+                    }
+                }
+                catch (ArgumentException ex)
+                {
+                    // Handle cases where the token string is malformed and cannot be read
+                    Trace.WriteLine($"Error parsing access token: {ex.Message}. Token might not be a valid JWT.");
+                }
+                catch (Exception ex) // Catch other potential exceptions during parsing
+                {
+                    Trace.WriteLine($"An unexpected error occurred while reading access token expiry: {ex.Message}");
+                }
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             }
 
-            // Send the request initially
             var response = await base.SendAsync(request, cancellationToken);
 
-            // Check if response is Unauthorized (401)
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
                 var refreshToken = context?.User?.FindFirst("RefreshToken")?.Value;
 
-                // Only attempt refresh if we have a refresh token
                 if (!string.IsNullOrEmpty(refreshToken))
                 {
-                    // Try to refresh the token
                     var newTokens = await RefreshTokensAsync(refreshToken, cancellationToken);
 
                     if (newTokens != null)
                     {
-                        // Update the cookie with new tokens
                         await UpdateAuthenticationCookie(context, newTokens);
 
-                        // Clone the original request
                         var clonedRequest = await CloneHttpRequestMessageAsync(request); // Implement this helper
 
-                        // Add the *new* access token to the cloned request
                         clonedRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", newTokens.Token);
 
-                        // Re-send the request with the new token
                         response = await base.SendAsync(clonedRequest, cancellationToken);
                     }
                     else
                     {
-                        // Refresh failed, sign out the user from the MVC app
                         await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                        // Optionally redirect to login or return the original 401?
-                        // Returning original 401 might be better API behavior.
                     }
                 }
                 else
@@ -86,8 +122,8 @@ namespace P4___Distributed_Fault_Tolerance.Handlers
         {
             try
             {
-                var refreshClient = _httpClientFactory.CreateClient(RefreshClientName); // Use dedicated client
-                var refreshUrl = $"{_apiBaseUrl}/refresh"; // Ensure this is your API's refresh endpoint
+                var refreshClient = _httpClientFactory.CreateClient(RefreshClientName);
+                var refreshUrl = $"refresh";
 
                 var requestBody = new { RefreshToken = refreshToken };
                 var json = JsonConvert.SerializeObject(requestBody);
@@ -115,7 +151,6 @@ namespace P4___Distributed_Fault_Tolerance.Handlers
             var currentPrincipal = context.User;
             if (currentPrincipal?.Identity is ClaimsIdentity currentIdentity)
             {
-                // Create a new list of claims, replacing token claims, keeping others
                 var newClaims = currentIdentity.Claims
                     .Where(c => c.Type != "AccessToken" && c.Type != "RefreshToken" && c.Type != "AccessTokenExpiry")
                     .ToList();
@@ -123,7 +158,6 @@ namespace P4___Distributed_Fault_Tolerance.Handlers
                 newClaims.Add(new Claim("AccessToken", newTokens.Token));
                 newClaims.Add(new Claim("RefreshToken", newTokens.RefreshToken));
 
-                // Add expiry from the new token
                 try
                 {
                     var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
@@ -134,20 +168,17 @@ namespace P4___Distributed_Fault_Tolerance.Handlers
                         newClaims.Add(new Claim("AccessTokenExpiry", expiryClaim.Value, ClaimValueTypes.Integer64));
                     }
                 }
-                catch { } // Ignore if parsing fails
+                catch { } 
 
-                var newIdentity = new ClaimsIdentity(newClaims, currentIdentity.AuthenticationType); // Preserve original scheme
+                var newIdentity = new ClaimsIdentity(newClaims, currentIdentity.AuthenticationType);
                 var newPrincipal = new ClaimsPrincipal(newIdentity);
 
-                // Get existing auth properties to preserve settings like IsPersistent
                 var authProps = (await context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme))?.Properties ?? new AuthenticationProperties();
 
-                // Re-issue the cookie with updated claims and tokens
                 await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, newPrincipal, authProps);
             }
         }
 
-        // Helper to clone HttpRequestMessage as it can only be sent once
         private static async Task<HttpRequestMessage> CloneHttpRequestMessageAsync(HttpRequestMessage req)
         {
             var clone = new HttpRequestMessage(req.Method, req.RequestUri)

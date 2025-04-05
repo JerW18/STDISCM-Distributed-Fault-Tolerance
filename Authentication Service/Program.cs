@@ -23,6 +23,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
 }).AddJwtBearer(options =>
     {
         options.RequireHttpsMetadata = false;
@@ -31,9 +32,10 @@ builder.Services.AddAuthentication(options =>
         {
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(key),
+            RequireExpirationTime = true,
             ValidateIssuer = false,
             ValidateAudience = false,
-            RequireExpirationTime = true
+            ValidateLifetime = true
         };
     });
 
@@ -83,15 +85,21 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
     string[] roleNames = { "Student", "Teacher", "Admin" };
 
     foreach (var roleName in roleNames)
     {
         var roleExists = await roleManager.RoleExistsAsync(roleName);
+
         if (!roleExists)
         {
-            await roleManager.CreateAsync(new IdentityRole(roleName));
+            var newRole = new IdentityRole(roleName);
+            IdentityResult result = await roleManager.CreateAsync(newRole);
         }
     }
 }
@@ -103,7 +111,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowWebApp");
 
 app.UseAuthentication();
 app.UseAuthorization();

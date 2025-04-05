@@ -11,7 +11,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Account/Login";
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
         options.SlidingExpiration = true;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
@@ -25,23 +25,21 @@ builder.Services.AddHttpClient("AuthApiClient", client =>
     var authApiBaseUrl = builder.Configuration["ApiSettings:AuthBaseUrl"];
     client.BaseAddress = new Uri(authApiBaseUrl);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
-});
+}).AddHttpMessageHandler<TokenRefreshHandler>();
 
 builder.Services.AddHttpClient("CourseApiClient", client =>
 {
     var courseApiBaseUrl = builder.Configuration["ApiSettings:CourseBaseUrl"]; 
     client.BaseAddress = new Uri(courseApiBaseUrl);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
-})
-.AddHttpMessageHandler<TokenRefreshHandler>();
+}).AddHttpMessageHandler<TokenRefreshHandler>();
 
 builder.Services.AddHttpClient("GradeApiClient", client => 
 {
     var gradeApiBaseUrl = builder.Configuration["ApiSettings:GradeBaseUrl"];
     client.BaseAddress = new Uri(gradeApiBaseUrl); 
     client.DefaultRequestHeaders.Add("Accept", "application/json");
-})
-.AddHttpMessageHandler<TokenRefreshHandler>();
+}).AddHttpMessageHandler<TokenRefreshHandler>();
 
 builder.Services.AddHttpClient("RefreshClient", client =>
 {
@@ -54,7 +52,7 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(60);
+    options.IdleTimeout = TimeSpan.FromMinutes(15);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
