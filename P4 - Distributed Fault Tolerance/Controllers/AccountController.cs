@@ -1,7 +1,9 @@
-﻿using System.Security.Claims;
+﻿using System.Net.Http;
+using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using P4___Distributed_Fault_Tolerance.Models;
@@ -53,43 +55,25 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                var responseBody = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<RefreshTokenResponse>(await response.Content.ReadAsStringAsync());
-
-                if (string.IsNullOrEmpty(result?.Token) || string.IsNullOrEmpty(result.RefreshToken))
-                {
-                    ModelState.AddModelError("", "Invalid token response received from API.");
-                    return View(model);
-                }
+                var result = JsonConvert.DeserializeObject<TokenResponse>(await response.Content.ReadAsStringAsync());
 
                 var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadJwtToken(result.Token);
 
                 var idNumberClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-                var roleClaim = jwtToken.Claims.Where(c => c.Type == ClaimTypes.Role).ToList();
+                var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
 
                 var claims = new List<Claim>
                 {
                     new(ClaimTypes.Name, idNumberClaim.Value),
-
-                    new("AccessToken", result.Token),
-                    new("RefreshToken", result.RefreshToken)
+                    new("Token", result.Token),
+                    new(ClaimTypes.Role, roleClaim.Value)
                 };
-
-                claims.AddRange(roleClaim);
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-                var authProperties = new AuthenticationProperties
-                {
-                    IsPersistent = false,
-                };
-
-                await HttpContext.SignInAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme, 
-                    claimsPrincipal,
-                    authProperties);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
 
                 return RedirectToAction("Index", "Home");
             }

@@ -13,7 +13,6 @@ namespace Course_Service.Controllers
     public class CourseController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-
         public CourseController(ApplicationDbContext context)
         {
             _context = context;

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using P4___Distributed_Fault_Tolerance.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,33 +17,25 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddTransient<TokenRefreshHandler>();
 
 builder.Services.AddHttpClient("AuthApiClient", client =>
 {
     var authApiBaseUrl = builder.Configuration["ApiSettings:AuthBaseUrl"];
     client.BaseAddress = new Uri(authApiBaseUrl);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
-}).AddHttpMessageHandler<TokenRefreshHandler>();
+});
 
 builder.Services.AddHttpClient("CourseApiClient", client =>
 {
-    var courseApiBaseUrl = builder.Configuration["ApiSettings:CourseBaseUrl"]; 
+    var courseApiBaseUrl = builder.Configuration["ApiSettings:CourseBaseUrl"];
     client.BaseAddress = new Uri(courseApiBaseUrl);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
-}).AddHttpMessageHandler<TokenRefreshHandler>();
+});
 
 builder.Services.AddHttpClient("GradeApiClient", client => 
 {
     var gradeApiBaseUrl = builder.Configuration["ApiSettings:GradeBaseUrl"];
     client.BaseAddress = new Uri(gradeApiBaseUrl); 
-    client.DefaultRequestHeaders.Add("Accept", "application/json");
-}).AddHttpMessageHandler<TokenRefreshHandler>();
-
-builder.Services.AddHttpClient("RefreshClient", client =>
-{
-    var authApiBaseUrl = builder.Configuration["ApiSettings:AuthBaseUrl"];
-    client.BaseAddress = new Uri(authApiBaseUrl);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
@@ -66,6 +57,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowWebApp");
+
 app.UseStaticFiles();
 app.UseRouting();
 
