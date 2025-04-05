@@ -14,6 +14,7 @@ namespace Course_Service.Models
         public required int Units { get; set; }
         public required int Capacity { get; set; }
         public required List<string> Students { get; set; }
+        public required string ProfId { get; set; } 
 
     }
 }

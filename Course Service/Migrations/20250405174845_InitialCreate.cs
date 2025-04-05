@@ -21,7 +21,8 @@ namespace Course_Service.Migrations
                     CourseSection = table.Column<string>(type: "TEXT", nullable: false),
                     Units = table.Column<int>(type: "INTEGER", nullable: false),
                     Capacity = table.Column<int>(type: "INTEGER", nullable: false),
-                    Students = table.Column<string>(type: "TEXT", nullable: false)
+                    Students = table.Column<string>(type: "TEXT", nullable: false),
+                    ProfId = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {

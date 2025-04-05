@@ -26,6 +26,20 @@ namespace Authentication_Service.Controllers
             _config = config;
         }
 
+        [HttpGet("students/{idNumber}")]
+        public IActionResult GetStudent(string idNumber)
+        {
+            var student = _userManager.Users.FirstOrDefault(s => s.Id == idNumber);
+            if (student == null) return NotFound();
+
+            return Ok(new
+            {
+                student.IdNumber,
+                student.FirstName,
+                student.LastName
+            });
+        }
+
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)

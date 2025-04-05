@@ -2,13 +2,17 @@
 
 <h2>Student's Grades</h2>
 
-<input type="text" id="courseFilter" placeholder="Search by course name..." style="width: 100%;" />
+<input type="text" id="courseFilter" placeholder="Search by course name/course code..." style="width: 100%;" />
 
 <table class="table table-striped" id="gradesTable">
     <thead>
         <tr>
             <th>ID Number</th>
+            <th>Last Name</th>
+            <th>First Name</th>
+            <th>Course ID</th>
             <th>Course Code</th>
+            <th>Course Name</th>
             <th>Grade</th>
         </tr>
     </thead>
@@ -17,6 +21,10 @@
         {
             <tr>
                 <td>@grade.StudentId</td>
+                <td>@grade.LastName</td>
+                <td>@grade.FirstName</td>
+                <td>@grade.CourseId</td>
+                <td>@grade.CourseCode</td>
                 <td>@grade.CourseName</td>
                 <td>@grade.GradeValue</td>
             </tr>
@@ -30,9 +38,10 @@
         $("#courseFilter").on("keyup", function() {
             var value = $(this).val().toLowerCase();
             $("#gradesTable tbody tr").filter(function() {
-                // Assuming the course name is in the second cell (index 1)
-                var courseName = $(this).find("td").eq(1).text().toLowerCase();
-                $(this).toggle(courseName.indexOf(value) > -1);
+                var cell5 = $(this).find("td").eq(4).text().toLowerCase();
+                var cell6 = $(this).find("td").eq(5).text().toLowerCase();
+                // Toggle the row if either cell contains the filter value
+                $(this).toggle(cell4.indexOf(value) > -1 || cell5.indexOf(value) > -1);
             });
         });
     });

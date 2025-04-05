@@ -22,7 +22,7 @@ namespace Grade_Service.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("CourseName")
+                    b.Property<string>("CourseId")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

@@ -37,6 +37,10 @@ namespace Course_Service.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ProfId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.PrimitiveCollection<string>("Students")
                         .IsRequired()
                         .HasColumnType("TEXT");

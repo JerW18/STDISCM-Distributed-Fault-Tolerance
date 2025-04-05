@@ -17,7 +17,7 @@ namespace Grade_Service.Migrations
                     GradeId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     StudentId = table.Column<string>(type: "TEXT", nullable: false),
-                    CourseName = table.Column<string>(type: "TEXT", nullable: false),
+                    CourseId = table.Column<string>(type: "TEXT", nullable: false),
                     GradeValue = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Authentication_Service.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250405152100_InitialCreate")]
+    [Migration("20250405174824_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -73,13 +73,6 @@ namespace Authentication_Service.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("RefreshToken")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("RefreshTokenExpiryTime")
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("TEXT");
