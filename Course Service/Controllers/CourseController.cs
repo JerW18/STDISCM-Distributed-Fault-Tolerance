@@ -9,7 +9,7 @@ namespace Course_Service.Controllers
 {
     [Route("api/course")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class CourseController : ControllerBase
     {
         private readonly ApplicationDbContext _context;

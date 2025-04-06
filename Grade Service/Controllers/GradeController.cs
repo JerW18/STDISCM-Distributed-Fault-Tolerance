@@ -29,6 +29,18 @@ namespace Grade_Service.Controllers
             _httpClientFactory = httpClientFactory;
         }
 
+        private HttpClient CreateServiceClient(string baseUrl)
+        {
+            var client = _httpClientFactory.CreateClient();
+            client.BaseAddress = new Uri(baseUrl);
+            var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(authHeader))
+            {
+                client.DefaultRequestHeaders.Add("Authorization", authHeader);
+            }
+            return client;
+        }
+
         [HttpPost("getAllGradesProf")]
         public async Task<IActionResult> GetAllGradesAsyncProf([FromBody] ViewGradeRequest viewGradeRequest)
         {
@@ -37,8 +49,7 @@ namespace Grade_Service.Controllers
                 return BadRequest(new { message = "Professor ID is required." });
             }
 
-            using var profClient = _httpClientFactory.CreateClient();
-            profClient.BaseAddress = new Uri("https://localhost:5002"); // Course Service URL
+            using var profClient = CreateServiceClient("https://localhost:5002");
             var courseIdsTheProfTeaches = await profClient.GetFromJsonAsync<List<int>>($"/api/course/profclass/{viewGradeRequest.IdNumber}");
 
             if (courseIdsTheProfTeaches == null || !courseIdsTheProfTeaches.Any())
@@ -78,8 +89,7 @@ namespace Grade_Service.Controllers
                                 continue; // Skip if grade exists
                             }
 
-                            using var authClient = _httpClientFactory.CreateClient();
-                            authClient.BaseAddress = new Uri("https://localhost:5001"); // Auth Service URL
+                            using var authClient = CreateServiceClient("https://localhost:5001");
                             var student = await authClient.GetFromJsonAsync<StudentDto>($"/api/auth/students/{studentId}");
 
                             studentCourseList.Add(new
@@ -159,8 +169,7 @@ namespace Grade_Service.Controllers
                 return NotFound(new { message = "No grades found for this student." });
             }
 
-            using var courseClient = new HttpClient();
-            courseClient.BaseAddress = new Uri("https://localhost:5002");
+            using var courseClient = CreateServiceClient("https://localhost:5002");
             var results = new List<object>();
 
             foreach (var grade in grades)
@@ -203,8 +212,7 @@ namespace Grade_Service.Controllers
                 return BadRequest(new { message = "Prof ID is required." });
             }
 
-            using var profClient = new HttpClient();
-            profClient.BaseAddress = new Uri("https://localhost:5002"); // Course Service URL
+            using var profClient = CreateServiceClient("https://localhost:5002");
             // Get the list of course IDs the professor teaches from the API
             var courseIdsTheProfTeaches = await profClient.GetFromJsonAsync<List<int>>($"/api/course/profclass/{viewGradeRequest.IdNumber}");
 
@@ -231,12 +239,10 @@ namespace Grade_Service.Controllers
                 try
                 {
                     // Create a new HttpClient instance for Auth Service
-                    using var authClient = new HttpClient();
-                    authClient.BaseAddress = new Uri("https://localhost:5001"); // Auth Service URL
+                    using var authClient = CreateServiceClient("https://localhost:5001");
                     var student = await authClient.GetFromJsonAsync<StudentDto>($"/api/auth/students/{grade.StudentId}");
                     // Create another HttpClient instance for Course Service
-                    using var courseClient = new HttpClient();
-                    courseClient.BaseAddress = new Uri("https://localhost:5002"); // Course Service URL
+                    using var courseClient = CreateServiceClient("https://localhost:5002");
                     var course = await courseClient.GetFromJsonAsync<CourseDto>($"/api/course/coursename/{grade.CourseId}");
 
                     results.Add(new
