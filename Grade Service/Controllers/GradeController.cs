@@ -14,12 +14,10 @@ namespace Grade_Service.Controllers
     public class GradeController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly IHttpClientFactory _httpClientFactory;
 
-        public GradeController(ApplicationDbContext context, IHttpClientFactory httpClientFactory)
+        public GradeController(ApplicationDbContext context)
         {
             _context = context;
-            _httpClientFactory = httpClientFactory;
         }
 
         [HttpPost("getAllGradesProf")]
@@ -153,10 +151,6 @@ namespace Grade_Service.Controllers
 
             return Ok();
         }
-
-
-
-
         [HttpPost("getGrades")]
         public async Task<IActionResult> GetGrades([FromBody] ViewGradeRequest viewGradeRequest)
         {
@@ -165,7 +159,6 @@ namespace Grade_Service.Controllers
                 return BadRequest(new { message = "Student ID is required." });
             }
 
-            // First check if grades exist
             var grades = await _context.Grades
                 .Where(g => g.StudentId == viewGradeRequest.IdNumber)
                 .ToListAsync();
@@ -232,11 +225,9 @@ namespace Grade_Service.Controllers
                 return NotFound(new { message = "No courses found for the specified professor." });
             }
 
-            // Get the grades for the courses the professor is teaching
             var grades = await _context.Grades
                 .Where(g => courseIdsTheProfTeaches.Contains(g.CourseId))
                 .ToListAsync();
-
 
             if (!grades.Any())
             {
@@ -290,7 +281,6 @@ namespace Grade_Service.Controllers
             return Ok(results);
         }
 
-
         public class StudentDto
         {
             public string IdNumber { get; set; }
@@ -302,7 +292,7 @@ namespace Grade_Service.Controllers
         {
             public string CourseId { get; set; }
             public string CourseCode { get; set; }
-            public string CourseName { get; set; } 
+            public string CourseName { get; set; }
         }
     }
 }

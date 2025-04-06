@@ -50,8 +50,7 @@ namespace Authentication_Service.Controllers
                 Email = model.Email,
                 IdNumber = model.IdNumber,
                 FirstName = model.FirstName,
-                LastName = model.LastName,
-                RefreshToken = string.Empty,
+                LastName = model.LastName
             };
             var result = await _userManager.CreateAsync(user, model.Password);
 
@@ -72,12 +71,9 @@ namespace Authentication_Service.Controllers
             {
                 var token = await GenerateJwtTokenAsync(user);
 
-                var refreshToken = GenerateRefreshToken();
-                user.RefreshToken = refreshToken;
-                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddHours(1);
                 await _userManager.UpdateAsync(user);
 
-                return Ok(new { token, refreshToken });
+                return Ok(new { token });
             }
             return Unauthorized(new { message = "Invalid email or password." });
         }
@@ -111,32 +107,6 @@ namespace Authentication_Service.Controllers
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        private string GenerateRefreshToken()
-        {
-            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-        }
-
-        [Authorize]
-        [HttpPost("refresh")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenModel model)
-        {
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == model.RefreshToken);
-
-            if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
-            {
-                return Unauthorized(new { message = "Invalid or expired refresh token." });
-            }
-
-            var newToken = await GenerateJwtTokenAsync(user);
-            var newRefreshToken = GenerateRefreshToken();
-
-            user.RefreshToken = newRefreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddHours(1);
-            await _userManager.UpdateAsync(user);
-
-            return Ok(new { token = newToken, refreshToken = newRefreshToken });
         }
     }
 }

@@ -12,19 +12,19 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0-noble AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["Authentication Service/Authentication Service.csproj", "Authentication Service/"]
-RUN dotnet restore "./Authentication Service/Authentication Service.csproj"
+COPY ["P4 - Distributed Fault Tolerance/P4 - Distributed Fault Tolerance.csproj", "P4 - Distributed Fault Tolerance/"]
+RUN dotnet restore "./P4 - Distributed Fault Tolerance/P4 - Distributed Fault Tolerance.csproj"
 COPY . .
-WORKDIR "/src/Authentication Service"
-RUN dotnet build "./Authentication Service.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/P4 - Distributed Fault Tolerance"
+RUN dotnet build "./P4 - Distributed Fault Tolerance.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Authentication Service.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./P4 - Distributed Fault Tolerance.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Authentication Service.dll"]
+ENTRYPOINT ["dotnet", "P4 - Distributed Fault Tolerance.dll"]

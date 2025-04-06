@@ -2,7 +2,6 @@
 using Course_Service.Data;
 using Course_Service.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,15 +9,15 @@ namespace Course_Service.Controllers
 {
     [Route("api/course")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class CourseController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-
         public CourseController(ApplicationDbContext context)
         {
             _context = context;
         }
+
         [HttpGet("coursename/{courseName}")]
         public IActionResult GetCourseName(string courseName)
         {
@@ -142,8 +141,5 @@ namespace Course_Service.Controllers
 
             return Ok(course);  // Return the course details
         }
-
-
-
     }
 }

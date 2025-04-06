@@ -16,12 +16,13 @@ namespace Course_Service.Migrations
                 {
                     CourseId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    courseCode = table.Column<string>(type: "TEXT", nullable: false),
-                    courseName = table.Column<string>(type: "TEXT", nullable: false),
-                    courseSection = table.Column<string>(type: "TEXT", nullable: false),
-                    units = table.Column<int>(type: "INTEGER", nullable: false),
-                    capacity = table.Column<int>(type: "INTEGER", nullable: false),
-                    students = table.Column<string>(type: "TEXT", nullable: false)
+                    CourseCode = table.Column<string>(type: "TEXT", nullable: false),
+                    CourseName = table.Column<string>(type: "TEXT", nullable: false),
+                    CourseSection = table.Column<string>(type: "TEXT", nullable: false),
+                    Units = table.Column<int>(type: "INTEGER", nullable: false),
+                    Capacity = table.Column<int>(type: "INTEGER", nullable: false),
+                    Students = table.Column<string>(type: "TEXT", nullable: false),
+                    ProfId = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {

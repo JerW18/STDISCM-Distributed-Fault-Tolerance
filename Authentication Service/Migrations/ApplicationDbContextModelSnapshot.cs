@@ -40,6 +40,10 @@ namespace Authentication_Service.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("IdNumber")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -75,10 +79,6 @@ namespace Authentication_Service.Migrations
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("idNumber")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

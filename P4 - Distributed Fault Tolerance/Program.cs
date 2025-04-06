@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using P4___Distributed_Fault_Tolerance.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,14 +10,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Account/Login";
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(15);
         options.SlidingExpiration = true;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddTransient<TokenRefreshHandler>();
 
 builder.Services.AddHttpClient("AuthApiClient", client =>
 {
@@ -29,24 +27,15 @@ builder.Services.AddHttpClient("AuthApiClient", client =>
 
 builder.Services.AddHttpClient("CourseApiClient", client =>
 {
-    var courseApiBaseUrl = builder.Configuration["ApiSettings:CourseBaseUrl"]; 
+    var courseApiBaseUrl = builder.Configuration["ApiSettings:CourseBaseUrl"];
     client.BaseAddress = new Uri(courseApiBaseUrl);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
-})
-.AddHttpMessageHandler<TokenRefreshHandler>();
+});
 
 builder.Services.AddHttpClient("GradeApiClient", client => 
 {
     var gradeApiBaseUrl = builder.Configuration["ApiSettings:GradeBaseUrl"];
     client.BaseAddress = new Uri(gradeApiBaseUrl); 
-    client.DefaultRequestHeaders.Add("Accept", "application/json");
-})
-.AddHttpMessageHandler<TokenRefreshHandler>();
-
-builder.Services.AddHttpClient("RefreshClient", client =>
-{
-    var authApiBaseUrl = builder.Configuration["ApiSettings:AuthBaseUrl"];
-    client.BaseAddress = new Uri(authApiBaseUrl);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
@@ -54,7 +43,7 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(60);
+    options.IdleTimeout = TimeSpan.FromMinutes(15);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
@@ -68,6 +57,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowWebApp");
+
 app.UseStaticFiles();
 app.UseRouting();
 

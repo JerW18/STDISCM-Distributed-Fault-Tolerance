@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Authentication_Service.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250402144450_AddIdNumber")]
-    partial class AddIdNumber
+    [Migration("20250405174824_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,6 +40,10 @@ namespace Authentication_Service.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("IdNumber")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -78,10 +82,6 @@ namespace Authentication_Service.Migrations
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("idNumber")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

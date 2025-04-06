@@ -61,7 +61,6 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
                 return grades;
             }
 
-            // Create the request body
             var requestBody = new { IdNumber = idNumber };
             var jsonContent = JsonConvert.SerializeObject(requestBody);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
