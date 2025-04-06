@@ -144,6 +144,12 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
                 var jsonData = await response.Content.ReadAsStringAsync();
                 grades = JsonConvert.DeserializeObject<List<GradeModel>>(jsonData);
             }
+            if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("Unable to fetch course IDs for the specified professor."))
+            {
+                ViewData["ErrorMessage"] = "Unable to fetch course IDs for the specified professor.";
+                return View("UploadGrades", grades);
+            }
+
 
             return View("UploadGrades", grades);
         }

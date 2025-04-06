@@ -50,7 +50,16 @@ namespace Grade_Service.Controllers
             }
 
             using var profClient = CreateServiceClient("https://localhost:5002");
-            var courseIdsTheProfTeaches = await profClient.GetFromJsonAsync<List<int>>($"/api/course/profclass/{viewGradeRequest.IdNumber}");
+            List<int> courseIdsTheProfTeaches = null;
+
+            try
+            {
+                courseIdsTheProfTeaches = await profClient.GetFromJsonAsync<List<int>>($"/api/course/profclass/{viewGradeRequest.IdNumber}");
+            }
+            catch (Exception)
+            {
+                return NotFound(new { message = "Unable to fetch course IDs for the specified professor." });
+            }
 
             if (courseIdsTheProfTeaches == null || !courseIdsTheProfTeaches.Any())
             {
@@ -89,29 +98,33 @@ namespace Grade_Service.Controllers
                                 continue; // Skip if grade exists
                             }
 
-                            using var authClient = CreateServiceClient("https://localhost:5001");
-                            var student = await authClient.GetFromJsonAsync<StudentDto>($"/api/auth/students/{studentId}");
-
-                            studentCourseList.Add(new
+                            try
                             {
-                                StudentId = studentId,
-                                FirstName = student?.FirstName,
-                                LastName = student?.LastName,
-                                CourseCode = course.CourseCode,
-                                CourseId = course.CourseId
-                            });
+                                using var authClient = CreateServiceClient("https://localhost:5001");
+                                var student = await authClient.GetFromJsonAsync<StudentDto>($"/api/auth/students/{studentId}");
+
+                                studentCourseList.Add(new
+                                {
+                                    StudentId = studentId,
+                                    FirstName = student?.FirstName ?? "N/A",
+                                    LastName = student?.LastName ?? "N/A",
+                                    CourseCode = course.CourseCode,
+                                    CourseId = course.CourseId
+                                });
+                            }
+                            catch (Exception ex)
+                            {
+                                // Handle any errors, possibly logging the exception if needed
+                                studentCourseList.Add(new
+                                {
+                                    StudentId = studentId,
+                                    FirstName = "N/A",
+                                    LastName = "N/A",
+                                    CourseCode = course.CourseCode,
+                                    CourseId = course.CourseId
+                                });
+                            }
                         }
-                    }
-                    else
-                    {
-                        studentCourseList.Add(new
-                        {
-                            StudentId = "N/A",
-                            FirstName = "N/A",
-                            LastName = "N/A",
-                            CourseCode = "N/A",
-                            CourseId = courseId
-                        });
                     }
                 }
                 catch (Exception ex)
@@ -211,66 +224,84 @@ namespace Grade_Service.Controllers
             {
                 return BadRequest(new { message = "Prof ID is required." });
             }
-
-            using var profClient = CreateServiceClient("https://localhost:5002");
-            // Get the list of course IDs the professor teaches from the API
-            var courseIdsTheProfTeaches = await profClient.GetFromJsonAsync<List<int>>($"/api/course/profclass/{viewGradeRequest.IdNumber}");
-
-            if (courseIdsTheProfTeaches == null || !courseIdsTheProfTeaches.Any())
+            List<GradeModel> grades;
+            try
             {
-                return NotFound(new { message = "No courses found for the specified professor." });
+                using var profClient = CreateServiceClient("https://localhost:5002");
+                // Get the list of course IDs the professor teaches from the API
+                var courseIdsTheProfTeaches = await profClient.GetFromJsonAsync<List<int>>($"/api/course/profclass/{viewGradeRequest.IdNumber}");
+
+                if (courseIdsTheProfTeaches == null || !courseIdsTheProfTeaches.Any())
+                {
+                    return NotFound(new { message = "No courses found for the specified professor." });
+                }
+
+                var courseIdStrings = courseIdsTheProfTeaches.Select(id => id.ToString()).ToList();
+
+                grades = await _context.Grades
+                    .Where(g => courseIdStrings.Contains(g.CourseId))
+                    .ToListAsync();
+
+                if (!grades.Any())
+                {
+                    return NotFound(new { message = "No grades found." });
+                }
             }
-
-            var courseIdStrings = courseIdsTheProfTeaches.Select(id => id.ToString()).ToList();
-
-            var grades = await _context.Grades
-                .Where(g => courseIdStrings.Contains(g.CourseId))
-                .ToListAsync();
-
-            if (!grades.Any())
+            catch
             {
-                return NotFound(new { message = "No grades found." });
+                // Fallback: Get all grades if the course service is unavailable
+                grades = await _context.Grades.ToListAsync();
             }
-
             var results = new List<object>();
 
             foreach (var grade in grades)
             {
+                string courseCode = "N/A";
+                string courseName = "N/A";
+                string firstName = "N/A";
+                string lastName = "N/A";
+
                 try
                 {
-                    // Create a new HttpClient instance for Auth Service
                     using var authClient = CreateServiceClient("https://localhost:5001");
                     var student = await authClient.GetFromJsonAsync<StudentDto>($"/api/auth/students/{grade.StudentId}");
-                    // Create another HttpClient instance for Course Service
+                    if (student != null)
+                    {
+                        firstName = student.FirstName;
+                        lastName = student.LastName;
+                    }
+                }
+                catch
+                {
+                    ModelState.AddModelError("StudentService", "Node Down: Unable to fetch student details.");
+                }
+
+                try
+                {
                     using var courseClient = CreateServiceClient("https://localhost:5002");
                     var course = await courseClient.GetFromJsonAsync<CourseDto>($"/api/course/coursename/{grade.CourseId}");
-
-                    results.Add(new
+                    if (course != null)
                     {
-                        grade.GradeId,
-                        grade.StudentId,
-                        grade.CourseId,
-                        CourseCode = course?.CourseCode,
-                        CourseName = course?.CourseName,
-                        grade.GradeValue,
-                        FirstName = student?.FirstName,
-                        LastName = student?.LastName
-                    });
+                        courseCode = course.CourseCode;
+                        courseName = course.CourseName;
+                    }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    results.Add(new
-                    {
-                        grade.GradeId,
-                        grade.StudentId,
-                        grade.CourseId,
-                        CourseCode = "N/A",
-                        CourseName = "N/A",
-                        grade.GradeValue,
-                        FirstName = "N/A",
-                        LastName = "N/A"
-                    });
+                    ModelState.AddModelError("CourseService", "Node Down: Unable to fetch course details.");
                 }
+
+                results.Add(new
+                {
+                    grade.GradeId,
+                    grade.StudentId,
+                    grade.CourseId,
+                    CourseCode = courseCode,
+                    CourseName = courseName,
+                    grade.GradeValue,
+                    FirstName = firstName,
+                    LastName = lastName
+                });
             }
 
             return Ok(results);

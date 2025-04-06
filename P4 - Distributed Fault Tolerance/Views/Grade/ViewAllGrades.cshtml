@@ -2,8 +2,6 @@
 
 <h2>Student's Grades</h2>
 
-<input type="text" id="courseFilter" placeholder="Search by course name/course code..." style="width: 100%;" />
-
 <table class="table table-striped" id="gradesTable">
     <thead>
         <tr>
@@ -34,15 +32,27 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    $(document).ready(function(){
-        $("#courseFilter").on("keyup", function() {
-            var value = $(this).val().toLowerCase();
-            $("#gradesTable tbody tr").filter(function() {
-                var cell5 = $(this).find("td").eq(4).text().toLowerCase();
-                var cell6 = $(this).find("td").eq(5).text().toLowerCase();
-                // Toggle the row if either cell contains the filter value
-                $(this).toggle(cell4.indexOf(value) > -1 || cell5.indexOf(value) > -1);
+    $(document).ready(function() {
+        function shouldHideColumn(tableSelector, columnIndex) {
+            var allNA = true;
+            $(tableSelector).find('tbody tr').each(function() {
+                var cellText = $(this).find('td:nth-child(' + columnIndex + ')').text().trim();
+                if (cellText !== 'N/A') {
+                    allNA = false;
+                    return false; // Exit loop early
+                }
             });
-        });
+            return allNA;
+        }
+
+        var table = '.table.table-striped';
+        var columnCount = $(table).find('thead th').length; // Get the total number of columns
+
+        // Loop through all columns and hide them if they only contain "N/A"
+        for (var i = 1; i <= columnCount; i++) {
+            if (shouldHideColumn(table, i)) {
+                $(table).find('thead th:nth-child(' + i + '), tbody td:nth-child(' + i + ')').hide();
+            }
+        }
     });
 </script>
