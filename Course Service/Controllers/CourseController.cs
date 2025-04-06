@@ -9,7 +9,7 @@ namespace Course_Service.Controllers
 {
     [Route("api/course")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class CourseController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -21,10 +21,6 @@ namespace Course_Service.Controllers
         [HttpGet("coursename/{courseName}")]
         public IActionResult GetCourseName(string courseName)
         {
-            // Logging to confirm the method is reached
-            Trace.WriteLine($"Searching for course with name: {courseName}");
-
-            // Handle case-insensitive search (optional, depending on your needs)
             var FullCourseName = _context.Courses
                 .FirstOrDefault(s => s.CourseId.ToString().ToLower() == courseName.Trim().ToLower());
 
@@ -101,7 +97,7 @@ namespace Course_Service.Controllers
         {
             var courseIds = _context.Courses
                 .Where(c => c.ProfId == profId)
-                .Select(c => c.CourseId) // Directly select the integer CourseId
+                .Select(c => c.CourseId)
                 .ToList();
 
             if (!courseIds.Any())
@@ -109,15 +105,12 @@ namespace Course_Service.Controllers
                 return NotFound(new { message = "No courses found." });
             }
 
-            return Ok(courseIds); // Returns a JSON array of integers like [1, 2, 3]
+            return Ok(courseIds); 
         }
 
         [HttpGet("findcourse/{courseId}")]
         public IActionResult GetCourseDetails(int courseId)
         {
-            Trace.WriteLine($"Searching for course with CourseId: {courseId}");
-
-            // Fetch the course from the database using the provided courseId
             var course = _context.Courses
                 .Where(c => c.CourseId == courseId)
                 .Select(c => new
@@ -128,18 +121,17 @@ namespace Course_Service.Controllers
                     c.CourseSection,
                     c.Units,
                     c.Capacity,
-                    Students = c.Students,  // Assuming Students is a List<string>
+                    Students = c.Students, 
                     c.ProfId
                 })
-                .FirstOrDefault();  // Use FirstOrDefault to fetch a single record
+                .FirstOrDefault();
 
             if (course == null)
             {
-                Trace.WriteLine($"Course with CourseId {courseId} not found.");
                 return NotFound(new { message = "Course not found." });
             }
 
-            return Ok(course);  // Return the course details
+            return Ok(course); 
         }
     }
 }

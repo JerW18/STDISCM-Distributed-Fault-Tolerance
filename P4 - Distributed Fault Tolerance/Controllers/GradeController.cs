@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using P4___Distributed_Fault_Tolerance.Models;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace P4___Distributed_Fault_Tolerance.Controllers
@@ -9,16 +10,33 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
     public class GradeController : Controller
     {
         private readonly HttpClient _gradeClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public GradeController(IHttpClientFactory httpClientFactory)
+        public GradeController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
         {
             _gradeClient = httpClientFactory.CreateClient("GradeApiClient");
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        private string GetUserAccessToken()
+        {
+            return _httpContextAccessor.HttpContext.User.FindFirst("Token")?.Value;
         }
 
         // This method fetches grades for a specific student
         private async Task<List<GradeModel>> GetGradesAsyncForStudent()
         {
             List<GradeModel> grades = new List<GradeModel>();
+
+            var token = GetUserAccessToken();
+            if (string.IsNullOrEmpty(token))
+            {
+                Console.WriteLine("API Access Token is missing.");
+                return grades;
+            }
+            _gradeClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
             var idNumber = User.Identity.Name;
 
             if (string.IsNullOrEmpty(idNumber))
@@ -54,6 +72,16 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
         private async Task<List<GradeModel>> GetGradesAsyncForAllStudents()
         {
             List<GradeModel> grades = new List<GradeModel>();
+
+            var token = GetUserAccessToken();
+            if (string.IsNullOrEmpty(token))
+            {
+                Console.WriteLine("API Access Token is missing.");
+                return grades;
+            }
+            _gradeClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
             var idNumber = User.Identity.Name;
 
             if (string.IsNullOrEmpty(idNumber))
@@ -87,6 +115,16 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
         public async Task<IActionResult> ViewAllGradesUpdate()
         {
             List<GradeModel> grades = new List<GradeModel>();
+
+            var token = GetUserAccessToken();
+            if (string.IsNullOrEmpty(token))
+            {
+                Console.WriteLine("API Access Token is missing.");
+                return View("UploadGrades", grades);
+            }
+            _gradeClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
             var idNumber = User.Identity.Name;
 
             if (string.IsNullOrEmpty(idNumber))

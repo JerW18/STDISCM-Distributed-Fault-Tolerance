@@ -9,7 +9,6 @@ using P4___Distributed_Fault_Tolerance.Models;
 
 namespace P4___Distributed_Fault_Tolerance.Controllers
 {
-    [Authorize]
     public class CourseController : Controller
     {
         private readonly HttpClient _courseClient;
