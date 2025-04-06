@@ -37,11 +37,18 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             _courseClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
 
-            HttpResponseMessage response = await _courseClient.GetAsync("getCourses");
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var jsonData = await response.Content.ReadAsStringAsync();
-                courses = JsonConvert.DeserializeObject<List<Course>>(jsonData);
+                HttpResponseMessage response = await _courseClient.GetAsync("getCourses");
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonData = await response.Content.ReadAsStringAsync();
+                    courses = JsonConvert.DeserializeObject<List<Course>>(jsonData);
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "The course service is down. Please try again later.");
             }
             return courses;
         }
@@ -62,13 +69,18 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             var idNumber = User.Identity.Name;
             var json = JsonConvert.SerializeObject(new { IdNumber = idNumber });
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-
+            try { 
             var response = await _courseClient.PostAsync("getAvailCourses", content);
 
             if (response.IsSuccessStatusCode)
             {
                 var jsonData = await response.Content.ReadAsStringAsync();
                 courses = JsonConvert.DeserializeObject<List<Course>>(jsonData);
+            }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "The course service is down. Please try again later.");
             }
             return courses;
         }
@@ -104,7 +116,7 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
 
             var json = JsonConvert.SerializeObject(new { CourseId = courseId, IdNumber = idNumber });
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-
+            try { 
             var response = await _courseClient.PostAsync("enrollStudent", content);
 
             if (response.IsSuccessStatusCode)
@@ -116,6 +128,11 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
 
             var errorMessage = await response.Content.ReadAsStringAsync();
             ModelState.AddModelError(string.Empty, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "The course service is down. Please try again later.");
+            }
             return View("EnrollCourse", courses);
         }
     }

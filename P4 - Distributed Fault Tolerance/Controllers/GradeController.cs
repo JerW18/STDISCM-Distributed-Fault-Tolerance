@@ -50,14 +50,20 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
             // Send a POST request to get grades
-            HttpResponseMessage response = await _gradeClient.PostAsync("getGrades", content);
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var jsonData = await response.Content.ReadAsStringAsync();
-                grades = JsonConvert.DeserializeObject<List<GradeModel>>(jsonData);
-            }
+                HttpResponseMessage response = await _gradeClient.PostAsync("getGrades", content);
 
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonData = await response.Content.ReadAsStringAsync();
+                    grades = JsonConvert.DeserializeObject<List<GradeModel>>(jsonData);
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "The grade service is down. Please try again later.");
+            }
             return grades;
         }
 
@@ -92,15 +98,19 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             var requestBody = new { IdNumber = idNumber };
             var jsonContent = JsonConvert.SerializeObject(requestBody);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            try { 
+                HttpResponseMessage response = await _gradeClient.PostAsync("getAllGrades", content);
 
-            HttpResponseMessage response = await _gradeClient.PostAsync("getAllGrades", content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var jsonData = await response.Content.ReadAsStringAsync();
-                grades = JsonConvert.DeserializeObject<List<GradeModel>>(jsonData);
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonData = await response.Content.ReadAsStringAsync();
+                    grades = JsonConvert.DeserializeObject<List<GradeModel>>(jsonData);
+                }
             }
-
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "The grade service is down. Please try again later.");
+            }
             return grades;
         }
 
@@ -136,7 +146,7 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             var requestBody = new { IdNumber = idNumber };
             var jsonContent = JsonConvert.SerializeObject(requestBody);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
+            try { 
             HttpResponseMessage response = await _gradeClient.PostAsync("getAllGradesProf", content);
 
             if (response.IsSuccessStatusCode)
@@ -148,6 +158,11 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             {
                 ViewData["ErrorMessage"] = "Unable to fetch course IDs for the specified professor.";
                 return View("UploadGrades", grades);
+            }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "The grade service is down. Please try again later.");
             }
 
 
@@ -186,6 +201,7 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
             // Send POST request to your API endpoint
+            try { 
             HttpResponseMessage response = await _gradeClient.PostAsync("UploadGradeToDB", content);
 
             if (response.IsSuccessStatusCode)
@@ -195,6 +211,11 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             else
             {
                 TempData["Error"] = "Failed to upload grade.";
+            }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "The grade service is down. Please try again later.");
             }
 
             // Redirect back to the view
