@@ -83,6 +83,71 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             return View("ViewAllGrades", grades); 
         }
 
+        // View grades of students for updating
+        public async Task<IActionResult> ViewAllGradesUpdate()
+        {
+            List<GradeModel> grades = new List<GradeModel>();
+            var idNumber = User.Identity.Name;
+
+            if (string.IsNullOrEmpty(idNumber))
+            {
+                return View("UploadGrades", grades);
+            }
+
+            // Create the request body
+            var requestBody = new { IdNumber = idNumber };
+            var jsonContent = JsonConvert.SerializeObject(requestBody);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await _gradeClient.PostAsync("getAllGradesProf", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonData = await response.Content.ReadAsStringAsync();
+                grades = JsonConvert.DeserializeObject<List<GradeModel>>(jsonData);
+            }
+
+            return View("UploadGrades", grades);
+        }
+
+        // Action to update grades
+        public async Task<IActionResult> UploadGradeToDB(string StudentId, string CourseId, string Grade)
+        {
+            if (string.IsNullOrEmpty(StudentId) || string.IsNullOrEmpty(CourseId) || string.IsNullOrEmpty(Grade))
+            {
+                // Optionally show error or redirect back with message
+                TempData["Error"] = "Missing required fields.";
+                Trace.WriteLine("Missing required fields.");
+                return RedirectToAction("ViewAllGradesUpdate");
+            }
+
+            // Create the request payload
+            var gradePayload = new
+            {
+                StudentId = StudentId,
+                CourseId = CourseId,
+                Grade = Grade
+            };
+
+            var jsonContent = JsonConvert.SerializeObject(gradePayload);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            // Send POST request to your API endpoint
+            HttpResponseMessage response = await _gradeClient.PostAsync("UploadGradeToDB", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = "Grade uploaded successfully.";
+            }
+            else
+            {
+                TempData["Error"] = "Failed to upload grade.";
+            }
+
+            // Redirect back to the view
+            return RedirectToAction("ViewAllGradesUpdate");
+        }
+
     }
 
 }

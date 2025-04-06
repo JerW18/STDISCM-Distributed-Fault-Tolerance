@@ -99,20 +99,47 @@ namespace Course_Service.Controllers
         [HttpGet("profclass/{profId}")]
         public IActionResult GetProfClasses(string profId)
         {
-            Trace.WriteLine($"Searching for course with profId: {profId}");
-
-            var allClasses = _context.Courses
-                .Where(s => s.ProfId == profId)
-                .Select(c => c.CourseId.ToString()) // Ensure CourseId is a string
+            var courseIds = _context.Courses
+                .Where(c => c.ProfId == profId)
+                .Select(c => c.CourseId) // Directly select the integer CourseId
                 .ToList();
 
-            if (!allClasses.Any())
+            if (!courseIds.Any())
             {
-                Trace.WriteLine($"No courses found for professor {profId}");
                 return NotFound(new { message = "No courses found." });
             }
 
-            return Ok(allClasses);
+            return Ok(courseIds); // Returns a JSON array of integers like [1, 2, 3]
+        }
+
+        [HttpGet("findcourse/{courseId}")]
+        public IActionResult GetCourseDetails(int courseId)
+        {
+            Trace.WriteLine($"Searching for course with CourseId: {courseId}");
+
+            // Fetch the course from the database using the provided courseId
+            var course = _context.Courses
+                .Where(c => c.CourseId == courseId)
+                .Select(c => new
+                {
+                    c.CourseId,
+                    c.CourseCode,
+                    c.CourseName,
+                    c.CourseSection,
+                    c.Units,
+                    c.Capacity,
+                    Students = c.Students,  // Assuming Students is a List<string>
+                    c.ProfId
+                })
+                .FirstOrDefault();  // Use FirstOrDefault to fetch a single record
+
+            if (course == null)
+            {
+                Trace.WriteLine($"Course with CourseId {courseId} not found.");
+                return NotFound(new { message = "Course not found." });
+            }
+
+            return Ok(course);  // Return the course details
         }
     }
 }
