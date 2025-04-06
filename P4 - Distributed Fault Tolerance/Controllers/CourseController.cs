@@ -46,6 +46,33 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             return courses;
         }
 
+        private async Task<List<Course>> GetCoursesAsyncEnroll()
+        {
+            List<Course> courses = new List<Course>();
+
+            var token = GetUserAccessToken();
+            if (string.IsNullOrEmpty(token))
+            {
+                Console.WriteLine("API Access Token is missing.");
+                return courses;
+            }
+            _courseClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
+            var idNumber = User.Identity.Name;
+            var json = JsonConvert.SerializeObject(new { IdNumber = idNumber });
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _courseClient.PostAsync("getAvailCourses", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonData = await response.Content.ReadAsStringAsync();
+                courses = JsonConvert.DeserializeObject<List<Course>>(jsonData);
+            }
+            return courses;
+        }
+
         public async Task<IActionResult> ViewCourses()
         {
             List<Course> courses = await GetCoursesAsync();
@@ -55,7 +82,7 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
 
         public async Task<IActionResult> ViewEnrollCourse()
         {
-            List<Course> courses = await GetCoursesAsync();
+            List<Course> courses = await GetCoursesAsyncEnroll();
 
             return View("EnrollCourse", courses);
         }
@@ -82,7 +109,7 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                courses = await GetCoursesAsync();
+                courses = await GetCoursesAsyncEnroll();
                 TempData["SuccessMessage"] = "Enrollment successful!";
                 return View("EnrollCourse", courses);
             }

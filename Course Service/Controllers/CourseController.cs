@@ -80,6 +80,19 @@ namespace Course_Service.Controllers
         }
 
         [HttpPost]
+        [Route("getAvailCourses")]
+        public async Task<IActionResult> GetCourses(EnrollRequest enrollrequest)
+        {
+            var allCourses = await _context.Courses.ToListAsync();
+
+            var filteredCourses = allCourses
+                .Where(c => !c.Students.Contains(enrollrequest.IdNumber)) 
+                .ToList();
+
+            return Ok(filteredCourses);
+        }
+
+        [HttpPost]
         [Route("addCourse")]
         public async Task<IActionResult> AddCourse([FromBody] Course course)
         {
