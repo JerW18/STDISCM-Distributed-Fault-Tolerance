@@ -159,6 +159,15 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
                 return RedirectToAction("ViewAllGradesUpdate");
             }
 
+            var token = GetUserAccessToken();
+            if (string.IsNullOrEmpty(token))
+            {
+                Console.WriteLine("API Access Token is missing.");
+                return View("ViewAllGradesUpdate");
+            }
+            _gradeClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
             // Create the request payload
             var gradePayload = new
             {
