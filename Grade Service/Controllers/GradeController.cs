@@ -55,16 +55,17 @@ namespace Grade_Service.Controllers
             try
             {
                 courseIdsTheProfTeaches = await profClient.GetFromJsonAsync<List<int>>($"/api/course/profclass/{viewGradeRequest.IdNumber}");
+                if (courseIdsTheProfTeaches == null || !courseIdsTheProfTeaches.Any())
+                {
+                    return NotFound(new { message = "No courses found for the specified professor." });
+                }
             }
             catch (Exception)
             {
-                return NotFound(new { message = "Unable to fetch course IDs for the specified professor." });
+                return NotFound(new { message = "The course service is down. Please try again later." });
             }
 
-            if (courseIdsTheProfTeaches == null || !courseIdsTheProfTeaches.Any())
-            {
-                return NotFound(new { message = "No courses found for the specified professor." });
-            }
+           
 
             var courseIdStrings = courseIdsTheProfTeaches.Select(id => id.ToString()).ToList();
 
@@ -114,30 +115,20 @@ namespace Grade_Service.Controllers
                             }
                             catch (Exception ex)
                             {
-                                // Handle any errors, possibly logging the exception if needed
-                                studentCourseList.Add(new
-                                {
-                                    StudentId = studentId,
-                                    FirstName = "N/A",
-                                    LastName = "N/A",
-                                    CourseCode = course.CourseCode,
-                                    CourseId = course.CourseId
-                                });
+                                return NotFound(new { message = "The authentication service is down. Please try again later." });
                             }
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    studentCourseList.Add(new
-                    {
-                        StudentId = "N/A",
-                        FirstName = "N/A",
-                        LastName = "N/A",
-                        CourseCode = "N/A",
-                        CourseId = courseId
-                    });
+                    return NotFound(new { message = "The course service is down. Please try again later." });
                 }
+            }
+
+            if (studentCourseList == null || !studentCourseList.Any())
+            {
+                return NotFound(new { message = "No students to be graded." });
             }
 
             return Ok(studentCourseList);
@@ -204,15 +195,7 @@ namespace Grade_Service.Controllers
                 }
                 catch (Exception ex)
                 {
-                    results.Add(new
-                    {
-                        grade.GradeId,
-                        grade.CourseId,
-                        grade.GradeValue,
-                        CourseName = "N/A",
-                        CourseCode = "N/A",
-                        Units = 0
-                    });
+                        return NotFound(new { message = "The course service is down. Please try again later." });
                 }
             }
 
@@ -275,7 +258,7 @@ namespace Grade_Service.Controllers
                 }
                 catch
                 {
-                    ModelState.AddModelError("StudentService", "Node Down: Unable to fetch student details.");
+                    return NotFound(new { message = "The authentication service is down. Please try again later." });
                 }
 
                 try
@@ -290,7 +273,7 @@ namespace Grade_Service.Controllers
                 }
                 catch
                 {
-                    ModelState.AddModelError("CourseService", "Node Down: Unable to fetch course details.");
+                    return NotFound(new { message = "The course service is down. Please try again later." });
                 }
 
                 results.Add(new

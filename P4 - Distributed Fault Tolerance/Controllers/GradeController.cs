@@ -59,6 +59,14 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
                     var jsonData = await response.Content.ReadAsStringAsync();
                     grades = JsonConvert.DeserializeObject<List<GradeModel>>(jsonData);
                 }
+                if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("The course service is down. Please try again later."))
+                {
+                    ModelState.AddModelError("", "The course service is down. Please try again later.");
+                }
+                if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("No grades found for this student."))
+                {
+                    ModelState.AddModelError("", "No grades found for this student.");
+                }
             }
             catch (Exception ex)
             {
@@ -106,6 +114,22 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
                     var jsonData = await response.Content.ReadAsStringAsync();
                     grades = JsonConvert.DeserializeObject<List<GradeModel>>(jsonData);
                 }
+                if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("The authentication service is down. Please try again later."))
+                {
+                    ModelState.AddModelError("", "The authentication service is down. Please try again later.");
+                }
+                if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("The course service is down. Please try again later."))
+                {
+                    ModelState.AddModelError("", "The course service is down. Please try again later.");
+                }
+                if (response.Content.ReadAsStringAsync().Result.Contains("No grades found."))
+                {
+                    ModelState.AddModelError("", "No grades found.");
+                }
+                if (response.Content.ReadAsStringAsync().Result.Contains("No courses found for the specified professor."))
+                {
+                    ModelState.AddModelError("", "No courses found for the specified professor.");
+                }
             }
             catch (Exception ex)
             {
@@ -147,18 +171,30 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             var jsonContent = JsonConvert.SerializeObject(requestBody);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
             try { 
-            HttpResponseMessage response = await _gradeClient.PostAsync("getAllGradesProf", content);
+                HttpResponseMessage response = await _gradeClient.PostAsync("getAllGradesProf", content);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var jsonData = await response.Content.ReadAsStringAsync();
-                grades = JsonConvert.DeserializeObject<List<GradeModel>>(jsonData);
-            }
-            if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("Unable to fetch course IDs for the specified professor."))
-            {
-                ViewData["ErrorMessage"] = "Unable to fetch course IDs for the specified professor.";
-                return View("UploadGrades", grades);
-            }
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonData = await response.Content.ReadAsStringAsync();
+                    grades = JsonConvert.DeserializeObject<List<GradeModel>>(jsonData);
+                }
+                if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("The course service is down. Please try again later."))
+                {
+                    ModelState.AddModelError("", "The course service is down. Please try again later.");
+                }
+                if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("The authentication service is down. Please try again later."))
+                {
+                    ModelState.AddModelError("", "The authentication service is down. Please try again later.");
+                }
+                if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("No courses found for the specified professor."))
+                {
+                    ModelState.AddModelError("", "No courses found for the specified professor.");
+                }
+                if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("No students to be graded."))
+                {
+                    ModelState.AddModelError("", "No students to be graded.");
+                }
+
             }
             catch (Exception ex)
             {
