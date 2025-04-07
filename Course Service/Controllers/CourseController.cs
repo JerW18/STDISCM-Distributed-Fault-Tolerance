@@ -36,8 +36,8 @@ namespace Course_Service.Controllers
             return Ok(new
             {
                 FullCourseName.CourseName,
-                FullCourseName.CourseCode
-
+                FullCourseName.CourseCode,
+                FullCourseName.Units
             });
 
         }

@@ -198,7 +198,8 @@ namespace Grade_Service.Controllers
                         grade.CourseId,
                         grade.GradeValue,
                         CourseName = course?.CourseName,
-                        CourseCode = course?.CourseCode
+                        CourseCode = course?.CourseCode,
+                        Units = course?.Units
                     });
                 }
                 catch (Exception ex)
@@ -209,7 +210,8 @@ namespace Grade_Service.Controllers
                         grade.CourseId,
                         grade.GradeValue,
                         CourseName = "N/A",
-                        CourseCode = "N/A"
+                        CourseCode = "N/A",
+                        Units = 0
                     });
                 }
             }

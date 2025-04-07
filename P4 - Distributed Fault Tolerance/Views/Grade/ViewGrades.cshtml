@@ -5,9 +5,9 @@
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>Course ID</th>
             <th>Course Code</th>
             <th>Course Name</th>
+            <th>Units</th>
             <th>Grade</th>
         </tr>
     </thead>
@@ -15,9 +15,9 @@
         @foreach (var grade in Model)
         {
             <tr>
-                <td>@grade.CourseId</td>
                 <td>@grade.CourseCode</td>
                 <td>@grade.CourseName</td>
+				<td>@grade.Units</td>
                 <td>@grade.GradeValue</td>
             </tr>
         }

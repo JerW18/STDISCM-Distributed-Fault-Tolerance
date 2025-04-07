@@ -10,5 +10,6 @@
         public string LastName { get; set; }  
         public string CourseName { get; set; }
         public string CourseCode { get; set; }
+        public int Units { get; set; }
     }
 }
