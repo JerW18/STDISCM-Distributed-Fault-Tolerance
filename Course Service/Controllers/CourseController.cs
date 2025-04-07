@@ -89,7 +89,8 @@ namespace Course_Service.Controllers
         {
             var allCourses = await _context.Courses.ToListAsync();
             var filteredCourses = allCourses
-                .Where(c => !c.Students.Contains(enrollrequest.IdNumber)) 
+                .Where(c => !c.Students.Contains(enrollrequest.IdNumber) &&
+                            c.Students.Count < c.Capacity)
                 .ToList();
             if (filteredCourses == null || !filteredCourses.Any()){
                 return NotFound(new { message = "No available courses to enroll in." });

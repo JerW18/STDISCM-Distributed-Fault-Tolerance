@@ -1,7 +1,4 @@
 ﻿@model List<P4___Distributed_Fault_Tolerance.Models.Course>
-@{
-    var availableCourses = Model.Where(c => (c.Students?.Count ?? 0) < c.Capacity);
-}
 <style>
     .btn {
         border: none;
@@ -30,7 +27,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var course in availableCourses)
+        @foreach (var course in Model)
         {
             <tr>
                 <td>@course.CourseCode</td>
