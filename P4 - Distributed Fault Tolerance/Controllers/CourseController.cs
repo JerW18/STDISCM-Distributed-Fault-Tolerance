@@ -45,6 +45,10 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
                     var jsonData = await response.Content.ReadAsStringAsync();
                     courses = JsonConvert.DeserializeObject<List<Course>>(jsonData);
                 }
+                if (!response.IsSuccessStatusCode && response.Content.ReadAsStringAsync().Result.Contains("No available courses."))
+                {
+                    ModelState.AddModelError("", "No available courses.");
+                }
             }
             catch (Exception ex)
             {
@@ -69,14 +73,19 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             var idNumber = User.Identity.Name;
             var json = JsonConvert.SerializeObject(new { IdNumber = idNumber });
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            try { 
-            var response = await _courseClient.PostAsync("getAvailCourses", content);
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var jsonData = await response.Content.ReadAsStringAsync();
-                courses = JsonConvert.DeserializeObject<List<Course>>(jsonData);
-            }
+                var response = await _courseClient.PostAsync("getAvailCourses", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonData = await response.Content.ReadAsStringAsync();
+                    courses = JsonConvert.DeserializeObject<List<Course>>(jsonData);
+                }
+                if (!response.IsSuccessStatusCode && response.Content.ReadAsStringAsync().Result.Contains("No available courses to enroll in."))
+                {
+                    ModelState.AddModelError("", "No available courses to enroll in.");
+                }
             }
             catch (Exception ex)
             {

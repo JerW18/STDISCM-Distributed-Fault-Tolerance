@@ -47,6 +47,10 @@ namespace Course_Service.Controllers
         public async Task<IActionResult> GetCourses()
         {
             var courses = await _context.Courses.ToListAsync();
+            if (courses == null || !courses.Any())
+            {
+                return NotFound(new { message = "No available courses." });
+            }
             return Ok(courses);
         }
 
@@ -87,11 +91,15 @@ namespace Course_Service.Controllers
             var filteredCourses = allCourses
                 .Where(c => !c.Students.Contains(enrollrequest.IdNumber)) 
                 .ToList();
+            if (filteredCourses == null || !filteredCourses.Any()){
+                return NotFound(new { message = "No available courses to enroll in." });
+            }
             return Ok(filteredCourses);
         }
 
         [HttpPost]
         [Route("addCourse")]
+        [AllowAnonymous]
         public async Task<IActionResult> AddCourse([FromBody] Course course)
         {
             if (course == null)
