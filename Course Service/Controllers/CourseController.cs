@@ -84,11 +84,9 @@ namespace Course_Service.Controllers
         public async Task<IActionResult> GetCourses(EnrollRequest enrollrequest)
         {
             var allCourses = await _context.Courses.ToListAsync();
-
             var filteredCourses = allCourses
                 .Where(c => !c.Students.Contains(enrollrequest.IdNumber)) 
                 .ToList();
-
             return Ok(filteredCourses);
         }
 
@@ -112,12 +110,6 @@ namespace Course_Service.Controllers
                 .Where(c => c.ProfId == profId)
                 .Select(c => c.CourseId)
                 .ToList();
-
-            if (!courseIds.Any())
-            {
-                return NotFound(new { message = "No courses found." });
-            }
-
             return Ok(courseIds); 
         }
 
@@ -138,12 +130,6 @@ namespace Course_Service.Controllers
                     c.ProfId
                 })
                 .FirstOrDefault();
-
-            if (course == null)
-            {
-                return NotFound(new { message = "Course not found." });
-            }
-
             return Ok(course); 
         }
     }
