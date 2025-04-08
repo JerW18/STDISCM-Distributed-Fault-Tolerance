@@ -18,14 +18,12 @@ namespace Grade_Service.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IHttpClientFactory _httpClientFactory;
 
-        //private readonly HttpClient _authClient;
-        //private readonly HttpClient _courseClient;
+        private readonly string _authServiceUrl = "http://localhost:8001";
+        private readonly string _courseServiceUrl = "http://localhost:8002";
 
         public GradeController(ApplicationDbContext context, IHttpClientFactory httpClientFactory)
         {
             _context = context;
-            //_authClient = httpClientFactory.CreateClient("AuthApiClient");
-            //_courseClient = httpClientFactory.CreateClient("CourseApiClient");
             _httpClientFactory = httpClientFactory;
         }
 
@@ -49,7 +47,7 @@ namespace Grade_Service.Controllers
                 return BadRequest(new { message = "Professor ID is required." });
             }
 
-            using var profClient = CreateServiceClient("https://localhost:5002");
+            using var profClient = CreateServiceClient(_courseServiceUrl);
             List<int> courseIdsTheProfTeaches = null;
 
             try
@@ -101,7 +99,7 @@ namespace Grade_Service.Controllers
 
                             try
                             {
-                                using var authClient = CreateServiceClient("https://localhost:5001");
+                                using var authClient = CreateServiceClient(_authServiceUrl);
                                 var student = await authClient.GetFromJsonAsync<StudentDto>($"/api/auth/students/{studentId}");
 
                                 studentCourseList.Add(new
@@ -173,7 +171,7 @@ namespace Grade_Service.Controllers
                 return NotFound(new { message = "No grades found for this student." });
             }
 
-            using var courseClient = CreateServiceClient("https://localhost:5002");
+            using var courseClient = CreateServiceClient(_courseServiceUrl);
             var results = new List<object>();
 
             foreach (var grade in grades)
@@ -212,7 +210,7 @@ namespace Grade_Service.Controllers
             List<GradeModel> grades;
             try
             {
-                using var profClient = CreateServiceClient("https://localhost:5002");
+                using var profClient = CreateServiceClient(_courseServiceUrl);
                 // Get the list of course IDs the professor teaches from the API
                 var courseIdsTheProfTeaches = await profClient.GetFromJsonAsync<List<int>>($"/api/course/profclass/{viewGradeRequest.IdNumber}");
 
@@ -248,7 +246,7 @@ namespace Grade_Service.Controllers
 
                 try
                 {
-                    using var authClient = CreateServiceClient("https://localhost:5001");
+                    using var authClient = CreateServiceClient(_authServiceUrl);
                     var student = await authClient.GetFromJsonAsync<StudentDto>($"/api/auth/students/{grade.StudentId}");
                     if (student != null)
                     {
@@ -263,7 +261,7 @@ namespace Grade_Service.Controllers
 
                 try
                 {
-                    using var courseClient = CreateServiceClient("https://localhost:5002");
+                    using var courseClient = CreateServiceClient(_courseServiceUrl);
                     var course = await courseClient.GetFromJsonAsync<CourseDto>($"/api/course/coursename/{grade.CourseId}");
                     if (course != null)
                     {
