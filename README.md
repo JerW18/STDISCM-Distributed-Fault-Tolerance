@@ -13,6 +13,6 @@ This project demonstrates a fault-tolerant online enrollment system built using 
 1. Double click on the provided `.sln` file and open the project in Visual Studio.
 2. Build the project by clicking **Build → Build Solution**.
 3. Configure the project to have multiple startup projects. See [link](https://learn.microsoft.com/en-us/visualstudio/ide/how-to-set-multiple-startup-projects?view=vs-2022) for guide.
-4. Set Action to **Start** and Debug Target to `https`.
+4. Set Action to **Start** and Debug Target to `http`.
 5. Run the project by clicking **Release → Start**.
 6. To disable a node, go to the multiple startup configuration and change its Action to `none`.
