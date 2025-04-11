@@ -50,36 +50,7 @@
         margin: 30px;
     }
 </style>
-@if (User.IsInRole("Admin"))
-{
-    <div class="outer_container">
-        <div class="blog_post">
-            <div class="container_copy">
-                <h1>View available courses</h1>
-                <a class="btn">Open</a>
-            </div>
-        </div>
-        <div class="blog_post">
-            <div class="container_copy">
-                <h1>Enroll students in courses</h1>
-                <a class="btn">Open</a>
-            </div>
-        </div>
-        <div class="blog_post">
-            <div class="container_copy">
-                <h1>View student's grades</h1>
-                <a class="btn">Open</a>
-            </div>
-        </div>
-        <div class="blog_post">
-            <div class="container_copy">
-                <h1>Upload grades</h1>
-                <a class="btn">Open</a>
-            </div>
-        </div>
-    </div>
-}
-else if (User.IsInRole("Student"))
+@if (User.IsInRole("Student"))
 {
     <div class="outer_container">
         <div class="blog_post">
