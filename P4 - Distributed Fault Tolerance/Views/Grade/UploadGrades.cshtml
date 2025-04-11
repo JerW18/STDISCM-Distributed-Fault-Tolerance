@@ -56,6 +56,7 @@
 				<th>First Name</th>
                 <th>Course Code</th>
                 <th>Course ID</th>
+                <th>Units</th>
                 <th>Grade</th>
             </tr>
         </thead>
@@ -68,11 +69,16 @@
                     <td>@grade.FirstName</td>
                     <td>@grade.CourseCode</td>
                     <td>@grade.CourseId</td>
+                    <td>@grade.Units</td>
                     <td>
                         <form method="post" asp-controller="Grade" asp-action="UploadGradeToDB">
                             <input type="hidden" name="StudentId" value="@grade.StudentId" />
+                            <input type="hidden" name="LastName" value="@grade.LastName" />
+						    <input type="hidden" name="FirstName" value="@grade.FirstName" />
 							<input type="hidden" name="CourseId" value="@grade.CourseId" />
-                            <select name="Grade" required>
+						    <input type="hidden" name="CourseCode" value="@grade.CourseCode" />
+                            <input type="hidden" name="Units" value="@grade.Units" />
+                        <select name="Grade" required>
                                 <option value="" disabled selected>Select grade</option>
                                 <option value="4.0">4.0</option>
                                 <option value="3.5">3.5</option>

@@ -59,10 +59,6 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
                     var jsonData = await response.Content.ReadAsStringAsync();
                     grades = JsonConvert.DeserializeObject<List<GradeModel>>(jsonData);
                 }
-                if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("The course service is down. Please try again later."))
-                {
-                    ModelState.AddModelError("", "The course service is down. Please try again later.");
-                }
                 if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("No grades found for this student."))
                 {
                     ModelState.AddModelError("", "No grades found for this student.");
@@ -114,21 +110,16 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
                     var jsonData = await response.Content.ReadAsStringAsync();
                     grades = JsonConvert.DeserializeObject<List<GradeModel>>(jsonData);
                 }
-                if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("The authentication service is down. Please try again later."))
+                else
                 {
-                    ModelState.AddModelError("", "The authentication service is down. Please try again later.");
-                }
-                if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("The course service is down. Please try again later."))
-                {
-                    ModelState.AddModelError("", "The course service is down. Please try again later.");
-                }
-                if (response.Content.ReadAsStringAsync().Result.Contains("No grades found."))
-                {
-                    ModelState.AddModelError("", "No grades found.");
-                }
-                if (response.Content.ReadAsStringAsync().Result.Contains("No courses found for the specified professor."))
-                {
-                    ModelState.AddModelError("", "No courses found for the specified professor.");
+                    if (response.Content.ReadAsStringAsync().Result.Contains("No grades found."))
+                    {
+                        ModelState.AddModelError("", "No grades found.");
+                    }
+                    if (response.Content.ReadAsStringAsync().Result.Contains("No courses found for the specified professor."))
+                    {
+                        ModelState.AddModelError("", "No courses found for the specified professor.");
+                    }
                 }
             }
             catch (Exception ex)
@@ -166,7 +157,6 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
                 return View("UploadGrades", grades);
             }
 
-            // Create the request body
             var requestBody = new { IdNumber = idNumber };
             var jsonContent = JsonConvert.SerializeObject(requestBody);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
@@ -178,23 +168,25 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
                     var jsonData = await response.Content.ReadAsStringAsync();
                     grades = JsonConvert.DeserializeObject<List<GradeModel>>(jsonData);
                 }
-                if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("The course service is down. Please try again later."))
+                else
                 {
-                    ModelState.AddModelError("", "The course service is down. Please try again later.");
+                    if (response.Content.ReadAsStringAsync().Result.Contains("The course service is down. Please try again later."))
+                    {
+                        ModelState.AddModelError("", "The course service is down. Please try again later.");
+                    }
+                    if (response.Content.ReadAsStringAsync().Result.Contains("The authentication service is down. Please try again later."))
+                    {
+                        ModelState.AddModelError("", "The authentication service is down. Please try again later.");
+                    }
+                    if (response.Content.ReadAsStringAsync().Result.Contains("No courses found for the specified professor."))
+                    {
+                        ModelState.AddModelError("", "No courses found for the specified professor.");
+                    }
+                    if (response.Content.ReadAsStringAsync().Result.Contains("No students to be graded."))
+                    {
+                        ModelState.AddModelError("", "No students to be graded.");
+                    }
                 }
-                if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("The authentication service is down. Please try again later."))
-                {
-                    ModelState.AddModelError("", "The authentication service is down. Please try again later.");
-                }
-                if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("No courses found for the specified professor."))
-                {
-                    ModelState.AddModelError("", "No courses found for the specified professor.");
-                }
-                if (response.IsSuccessStatusCode == false && response.Content.ReadAsStringAsync().Result.Contains("No students to be graded."))
-                {
-                    ModelState.AddModelError("", "No students to be graded.");
-                }
-
             }
             catch (Exception ex)
             {
@@ -206,11 +198,11 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
         }
 
         // Action to update grades
-        public async Task<IActionResult> UploadGradeToDB(string StudentId, string CourseId, string Grade)
+        public async Task<IActionResult> UploadGradeToDB(string StudentId, string LastName, string FirstName, string CourseId, string CourseCode, string Grade, int Units)
         {
-            if (string.IsNullOrEmpty(StudentId) || string.IsNullOrEmpty(CourseId) || string.IsNullOrEmpty(Grade))
+            var idNumber = User.Identity.Name;
+            if (string.IsNullOrEmpty(StudentId) || string.IsNullOrEmpty(CourseId) || string.IsNullOrEmpty(Grade) || string.IsNullOrEmpty(LastName) || string.IsNullOrEmpty(FirstName) || string.IsNullOrEmpty(CourseCode) || Units <= 0)
             {
-                // Optionally show error or redirect back with message
                 TempData["Error"] = "Missing required fields.";
                 Trace.WriteLine("Missing required fields.");
                 return RedirectToAction("ViewAllGradesUpdate");
@@ -225,36 +217,38 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             _gradeClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
 
-            // Create the request payload
             var gradePayload = new
             {
                 StudentId = StudentId,
+                LastName = LastName,
+                FirstName = FirstName,
                 CourseId = CourseId,
-                Grade = Grade
+                CourseCode = CourseCode,
+                Grade = Grade,
+                Units = Units,
+                ProfId = idNumber
             };
 
             var jsonContent = JsonConvert.SerializeObject(gradePayload);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-            // Send POST request to your API endpoint
             try { 
-            HttpResponseMessage response = await _gradeClient.PostAsync("UploadGradeToDB", content);
+                HttpResponseMessage response = await _gradeClient.PostAsync("UploadGradeToDB", content);
 
-            if (response.IsSuccessStatusCode)
-            {
-                TempData["Success"] = "Grade uploaded successfully.";
-            }
-            else
-            {
-                TempData["Error"] = "Failed to upload grade.";
-            }
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["Success"] = "Grade uploaded successfully.";
+                }
+                else
+                {
+                    TempData["Error"] = "Failed to upload grade.";
+                }
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", "The grade service is down. Please try again later.");
             }
 
-            // Redirect back to the view
             return RedirectToAction("ViewAllGradesUpdate");
         }
 

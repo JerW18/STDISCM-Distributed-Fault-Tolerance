@@ -108,7 +108,8 @@ namespace Grade_Service.Controllers
                                     FirstName = student?.FirstName ?? "N/A",
                                     LastName = student?.LastName ?? "N/A",
                                     CourseCode = course.CourseCode,
-                                    CourseId = course.CourseId
+                                    CourseId = course.CourseId,
+                                    Units = course.Units
                                 });
                             }
                             catch (Exception ex)
@@ -144,8 +145,13 @@ namespace Grade_Service.Controllers
             var newGrade = new GradeModel
             {
                 StudentId = payload.StudentId,
+                Lastname = payload.LastName,
+                Firstname = payload.FirstName,
                 CourseId = payload.CourseId,
-                GradeValue = payload.Grade // Ensure property name matches your model
+                CourseCode = payload.CourseCode,
+                GradeValue = payload.Grade,
+                Units = payload.Units,
+                ProfId = payload.ProfId
             };
 
             await _context.Grades.AddAsync(newGrade);
@@ -171,33 +177,7 @@ namespace Grade_Service.Controllers
                 return NotFound(new { message = "No grades found for this student." });
             }
 
-            using var courseClient = CreateServiceClient(_courseServiceUrl);
-            var results = new List<object>();
-
-            foreach (var grade in grades)
-            {
-                try
-                {
-                    // Get course details for EACH grade
-                    var course = await courseClient.GetFromJsonAsync<CourseDto>($"/api/course/coursename/{grade.CourseId}");
-
-                    results.Add(new
-                    {
-                        grade.GradeId,
-                        grade.CourseId,
-                        grade.GradeValue,
-                        CourseName = course?.CourseName,
-                        CourseCode = course?.CourseCode,
-                        Units = course?.Units
-                    });
-                }
-                catch (Exception ex)
-                {
-                        return NotFound(new { message = "The course service is down. Please try again later." });
-                }
-            }
-
-            return Ok(results);
+            return Ok(grades);
         }
 
         [HttpPost("getAllGrades")]
@@ -207,87 +187,16 @@ namespace Grade_Service.Controllers
             {
                 return BadRequest(new { message = "Prof ID is required." });
             }
-            List<GradeModel> grades;
-            try
+            var grades = await _context.Grades
+                .Where(g => g.ProfId == viewGradeRequest.IdNumber)
+                .ToListAsync();
+
+            if (!grades.Any())
             {
-                using var profClient = CreateServiceClient(_courseServiceUrl);
-                // Get the list of course IDs the professor teaches from the API
-                var courseIdsTheProfTeaches = await profClient.GetFromJsonAsync<List<int>>($"/api/course/profclass/{viewGradeRequest.IdNumber}");
-
-                if (courseIdsTheProfTeaches == null || !courseIdsTheProfTeaches.Any())
-                {
-                    return NotFound(new { message = "No courses found for the specified professor." });
-                }
-
-                var courseIdStrings = courseIdsTheProfTeaches.Select(id => id.ToString()).ToList();
-
-                grades = await _context.Grades
-                    .Where(g => courseIdStrings.Contains(g.CourseId))
-                    .ToListAsync();
-
-                if (!grades.Any())
-                {
-                    return NotFound(new { message = "No grades found." });
-                }
-            }
-            catch
-            {
-                // Fallback: Get all grades if the course service is unavailable
-                grades = await _context.Grades.ToListAsync();
-            }
-            var results = new List<object>();
-
-            foreach (var grade in grades)
-            {
-                string courseCode = "N/A";
-                string courseName = "N/A";
-                string firstName = "N/A";
-                string lastName = "N/A";
-
-                try
-                {
-                    using var authClient = CreateServiceClient(_authServiceUrl);
-                    var student = await authClient.GetFromJsonAsync<StudentDto>($"/api/auth/students/{grade.StudentId}");
-                    if (student != null)
-                    {
-                        firstName = student.FirstName;
-                        lastName = student.LastName;
-                    }
-                }
-                catch
-                {
-                    return NotFound(new { message = "The authentication service is down. Please try again later." });
-                }
-
-                try
-                {
-                    using var courseClient = CreateServiceClient(_courseServiceUrl);
-                    var course = await courseClient.GetFromJsonAsync<CourseDto>($"/api/course/coursename/{grade.CourseId}");
-                    if (course != null)
-                    {
-                        courseCode = course.CourseCode;
-                        courseName = course.CourseName;
-                    }
-                }
-                catch
-                {
-                    return NotFound(new { message = "The course service is down. Please try again later." });
-                }
-
-                results.Add(new
-                {
-                    grade.GradeId,
-                    grade.StudentId,
-                    grade.CourseId,
-                    CourseCode = courseCode,
-                    CourseName = courseName,
-                    grade.GradeValue,
-                    FirstName = firstName,
-                    LastName = lastName
-                });
+                return NotFound(new { message = "No grades found for this student." });
             }
 
-            return Ok(results);
+            return Ok(grades);
         }
     }
 }
