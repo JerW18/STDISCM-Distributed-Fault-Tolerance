@@ -41,18 +41,13 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             var profs = new List<ProfModel>();
             HttpResponseMessage response = await _courseClient.GetAsync("prof");
 
-            Trace.WriteLine($"Response: {response}");
             if (response.IsSuccessStatusCode)
             {
                 var jsonData = await response.Content.ReadAsStringAsync();
-                Trace.WriteLine($"jsonData: {jsonData}");
 
                 profs = System.Text.Json.JsonSerializer.Deserialize<List<ProfModel>>(jsonData);
             }
-            Trace.WriteLine($"prof: {profs}");
 
-
-            Trace.WriteLine($"Professors: {string.Join("NEWWW, ", profs.Select(p => p.Id))}");
 
             var viewModel = new CourseFormViewModel
             {
@@ -98,7 +93,6 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
 
             var jsonContent = JsonConvert.SerializeObject(courseDetails);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-            Trace.WriteLine($"jsonContent: {jsonContent}");
 
             try { 
                 HttpResponseMessage response = await _courseClient.PostAsync("addNewCourse", content);

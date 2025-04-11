@@ -204,7 +204,6 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             if (string.IsNullOrEmpty(StudentId) || string.IsNullOrEmpty(CourseId) || string.IsNullOrEmpty(Grade) || string.IsNullOrEmpty(LastName) || string.IsNullOrEmpty(FirstName) || string.IsNullOrEmpty(CourseCode) || Units <= 0)
             {
                 TempData["Error"] = "Missing required fields.";
-                Trace.WriteLine("Missing required fields.");
                 return RedirectToAction("ViewAllGradesUpdate");
             }
 

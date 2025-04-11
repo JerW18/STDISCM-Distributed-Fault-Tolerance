@@ -64,11 +64,9 @@ namespace Course_Service.Controllers
                 .FirstOrDefault(s => s.CourseId.ToString().ToLower() == courseName.Trim().ToLower());
 
             var courseFromDb = _context.Courses.FirstOrDefault();
-            Trace.WriteLine($"Stored course name: '{courseFromDb?.CourseName}'");
 
             if (FullCourseName == null)
             {
-                Trace.WriteLine($"Course with name {courseName} not found");
                 return NotFound(new { message = "Course not found" });
             }
 

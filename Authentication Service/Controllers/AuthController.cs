@@ -31,10 +31,6 @@ namespace Authentication_Service.Controllers
         public async Task<IActionResult> GetProf()
         {
             var profs = await _userManager.GetUsersInRoleAsync("Teacher");
-            foreach (var prof in profs)
-            {
-                Trace.WriteLine($"Prof: {prof.Id}, {prof.FirstName}, {prof.LastName}");
-            }
             var profList = profs.Select(p => new ProfModel
             {
                 Id = p.Id,
