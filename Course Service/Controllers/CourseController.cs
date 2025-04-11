@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics;
+using System.Net.Http;
 using Course_Service.Data;
 using Course_Service.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using P4___Distributed_Fault_Tolerance.Models;
 
 namespace Course_Service.Controllers
 {
@@ -13,9 +15,25 @@ namespace Course_Service.Controllers
     public class CourseController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        public CourseController(ApplicationDbContext context)
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _authServiceUrl = "http://localhost:8001";
+
+        public CourseController(ApplicationDbContext context, IHttpClientFactory httpClientFactory)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
+
+        }
+        private HttpClient CreateServiceClient(string baseUrl)
+        {
+            var client = _httpClientFactory.CreateClient();
+            client.BaseAddress = new Uri(baseUrl);
+            var authHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(authHeader))
+            {
+                client.DefaultRequestHeaders.Add("Authorization", authHeader);
+            }
+            return client;
         }
 
         [HttpGet("coursename/{courseName}")]
@@ -99,9 +117,9 @@ namespace Course_Service.Controllers
         }
 
         [HttpPost]
-        [Route("addCourse")]
+        [Route("addNewCourse")]
         [AllowAnonymous]
-        public async Task<IActionResult> AddCourse([FromBody] Course course)
+        public async Task<IActionResult> addNewCourse([FromBody] Course course)
         {
             if (course == null)
             {

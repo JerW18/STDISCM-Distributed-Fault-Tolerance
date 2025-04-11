@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using P4___Distributed_Fault_Tolerance.Models;
 
@@ -22,6 +24,79 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
         private string GetUserAccessToken()
         {
             return _httpContextAccessor.HttpContext.User.FindFirst("Token")?.Value;
+        }
+
+        public async Task<IActionResult> AddCourse()
+        {
+            var token = GetUserAccessToken();
+            if (string.IsNullOrEmpty(token))
+            {
+                Console.WriteLine("API Access Token is missing.");
+                return View("ViewAllGradesUpdate");
+            }
+            _courseClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
+            var Course = new Course
+                {
+                    CourseId = 0,
+                    CourseCode = "",
+                    CourseName = "",
+                    CourseSection = "",
+                    ProfId = "",
+                    Students = new List<string>(),
+                    Units = 0,
+                    Capacity = 0
+                };
+
+            return View("AddCourse", Course);
+        }
+
+        public async Task<IActionResult> addNewCourse(int CourseId, string CourseCode, string CourseName, string CourseSection, int Units, int Capacity, string ProfId)
+        {
+            
+            var token = GetUserAccessToken();
+            if (string.IsNullOrEmpty(token))
+            {
+                Console.WriteLine("API Access Token is missing.");
+                return View("ViewAllGradesUpdate");
+            }
+            _courseClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
+            var courseDetails = new
+            {
+                CourseId = CourseId,
+                CourseCode = CourseCode,
+                CourseName = CourseName,
+                CourseSection = CourseSection,
+                Units = Units,
+                Capacity = Capacity,
+                ProfId = ProfId,
+                Students = new List<string>()
+            };
+
+            var jsonContent = JsonConvert.SerializeObject(courseDetails);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            try { 
+                HttpResponseMessage response = await _courseClient.PostAsync("addNewCourse", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["Success"] = "Grade uploaded successfully.";
+                }
+                else
+                {
+                    TempData["Error"] = "Failed to upload grade.";
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "The course service is down. Please try again later.");
+            }
+
+            return RedirectToAction("AddCourse");
         }
 
         private async Task<List<Course>> GetCoursesAsync()
