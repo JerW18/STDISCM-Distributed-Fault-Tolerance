@@ -37,22 +37,42 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
             _courseClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
 
-            var Course = new Course
+
+            var profs = new List<ProfModel>();
+            HttpResponseMessage response = await _courseClient.GetAsync("prof");
+
+            Trace.WriteLine($"Response: {response}");
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonData = await response.Content.ReadAsStringAsync();
+                Trace.WriteLine($"jsonData: {jsonData}");
+
+                profs = System.Text.Json.JsonSerializer.Deserialize<List<ProfModel>>(jsonData);
+            }
+            Trace.WriteLine($"prof: {profs}");
+
+
+            Trace.WriteLine($"Professors: {string.Join("NEWWW, ", profs.Select(p => p.Id))}");
+
+            var viewModel = new CourseFormViewModel
+            {
+                Professors = profs,
+                Course = new Course
                 {
-                    CourseId = 0,
                     CourseCode = "",
                     CourseName = "",
                     CourseSection = "",
-                    ProfId = "",
-                    Students = new List<string>(),
                     Units = 0,
-                    Capacity = 0
-                };
+                    Capacity = 0,
+                    Students = new List<string>(),
+                    ProfId = ""
+                }
+            };
 
-            return View("AddCourse", Course);
+            return View("AddCourse", viewModel);
         }
 
-        public async Task<IActionResult> addNewCourse(int CourseId, string CourseCode, string CourseName, string CourseSection, int Units, int Capacity, string ProfId)
+        public async Task<IActionResult> addNewCourse(CourseFormViewModel model)
         {
             
             var token = GetUserAccessToken();
@@ -66,18 +86,19 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
 
             var courseDetails = new
             {
-                CourseId = CourseId,
-                CourseCode = CourseCode,
-                CourseName = CourseName,
-                CourseSection = CourseSection,
-                Units = Units,
-                Capacity = Capacity,
-                ProfId = ProfId,
+                CourseId = model.Course.CourseId,
+                CourseCode = model.Course.CourseCode,
+                CourseName = model.Course.CourseName,
+                CourseSection = model.Course.CourseSection,
+                Units = model.Course.Units,
+                Capacity = model.Course.Capacity,
+                ProfId = model.Course.ProfId,
                 Students = new List<string>()
             };
 
             var jsonContent = JsonConvert.SerializeObject(courseDetails);
             var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            Trace.WriteLine($"jsonContent: {jsonContent}");
 
             try { 
                 HttpResponseMessage response = await _courseClient.PostAsync("addNewCourse", content);

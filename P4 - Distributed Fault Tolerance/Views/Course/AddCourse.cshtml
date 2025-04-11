@@ -1,4 +1,4 @@
-﻿@model P4___Distributed_Fault_Tolerance.Models.Course
+﻿@model P4___Distributed_Fault_Tolerance.Models.CourseFormViewModel
 
 @{
     ViewData["Title"] = "Add Course";
@@ -153,28 +153,35 @@
     </div>
     <div class="form-container">
         <div class="form-inner">
-            <form asp-action="AddNewCourse" method="post" class="signup">
+            <form asp-action="addNewCourse" method="post" class="signup">
                 <div asp-validation-summary="All" class="text-danger"></div>
                 <div class="field">
-                    <input type="number" asp-for="CourseId" placeholder="Course Id" required>
+                    <input type="number" asp-for="Course.CourseId" placeholder="Course ID" required>
                 </div>
                 <div class="field">
-                    <input type="text" asp-for="CourseCode" placeholder="Course Code" required>
+                    <input type="text" asp-for="Course.CourseCode" placeholder="Course Code" required>
                 </div>
                 <div class="field">
-                    <input type="text" asp-for="CourseName" placeholder="Course Name" required>
+                    <input type="text" asp-for="Course.CourseName" placeholder="Course Name" required>
                 </div>
                 <div class="field">
-                    <input type="text" asp-for="CourseSection" placeholder="Course Section" required>
+                    <input type="text" asp-for="Course.CourseSection" placeholder="Course Section" required>
                 </div>
                 <div class="field">
-                    <input type="number" asp-for="Units" placeholder="Units" required>
+                    <input type="number" asp-for="Course.Units" placeholder="Units" required>
                 </div>
                 <div class="field">
-                    <input type="number" asp-for="Capacity" placeholder="Capacity" required>
+                    <input type="number" asp-for="Course.Capacity" placeholder="Capacity" required>
                 </div>
+
                 <div class="field">
-                    <input type="text" asp-for="ProfId" placeholder="ProfId" required>
+                    <select asp-for="Course.ProfId" class="form-control" required>
+                        <option value="" disabled selected>Select professor</option>
+                        @foreach (var prof in Model.Professors)
+                        {
+                            <option value="@prof.Id">@prof.LastName, @prof.FirstName</option>
+                        }
+                    </select>
                 </div>
 
                 <div class="field btn">
@@ -182,6 +189,7 @@
                     <input type="submit" value="Add Course">
                 </div>
             </form>
+
         </div>
     </div>
 </div>

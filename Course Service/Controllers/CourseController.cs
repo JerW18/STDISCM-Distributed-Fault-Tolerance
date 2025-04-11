@@ -1,11 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Net.Http;
+using System.Text.Json;
 using Course_Service.Data;
 using Course_Service.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using P4___Distributed_Fault_Tolerance.Models;
 
 namespace Course_Service.Controllers
 {
@@ -35,6 +35,27 @@ namespace Course_Service.Controllers
             }
             return client;
         }
+
+        [HttpGet("prof")]
+        public async Task<IActionResult> GetProf()
+        {
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true
+            };
+            var client = CreateServiceClient(_authServiceUrl);
+            var response = await client.GetAsync("api/auth/prof");
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonData = await response.Content.ReadAsStringAsync();
+                options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var profs = JsonSerializer.Deserialize<List<ProfModel>>(jsonData, options);
+                return Ok(profs);
+            }
+            return StatusCode((int)response.StatusCode, "Failed to retrieve professors.");
+        }
+
 
         [HttpGet("coursename/{courseName}")]
         public IActionResult GetCourseName(string courseName)

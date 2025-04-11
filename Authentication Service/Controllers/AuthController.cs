@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Authentication_Service.Data;
 using Microsoft.AspNetCore.Authorization;
+using System.Diagnostics;
 
 namespace Authentication_Service.Controllers
 {
@@ -25,6 +26,26 @@ namespace Authentication_Service.Controllers
             _userManager = userManager;
             _config = config;
         }
+
+        [HttpGet("prof")]
+        public async Task<IActionResult> GetProf()
+        {
+            var profs = await _userManager.GetUsersInRoleAsync("Teacher");
+            foreach (var prof in profs)
+            {
+                Trace.WriteLine($"Prof: {prof.Id}, {prof.FirstName}, {prof.LastName}");
+            }
+            var profList = profs.Select(p => new ProfModel
+            {
+                Id = p.Id,
+                FirstName = p.FirstName,  // You may need to access a custom property here
+                LastName = p.LastName     // Same for LastName, or access the profile
+            }).ToList();
+
+            return Ok(profList);
+
+        }
+
 
         [HttpGet("students/{idNumber}")]
         public IActionResult GetStudent(string idNumber)

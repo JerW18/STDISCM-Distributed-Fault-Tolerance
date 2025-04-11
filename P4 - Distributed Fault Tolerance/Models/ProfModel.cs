@@ -1,9 +1,17 @@
-﻿namespace P4___Distributed_Fault_Tolerance.Models
+﻿using System.Text.Json.Serialization;
+
+namespace P4___Distributed_Fault_Tolerance.Models
 {
     public class ProfModel
     {
-        public string ProfId { get; set; }
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("firstName")]
         public string FirstName { get; set; }
+
+        [JsonPropertyName("lastName")]
         public string LastName { get; set; }
     }
+
 }
