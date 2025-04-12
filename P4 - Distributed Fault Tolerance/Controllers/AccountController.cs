@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System.Diagnostics;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
@@ -61,15 +62,14 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
                     var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
                     var jwtToken = tokenHandler.ReadJwtToken(result.Token);
 
-                    var idNumberClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
                     var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
 
                     var claims = new List<Claim>
-                {
-                    new(ClaimTypes.Name, idNumberClaim.Value),
-                    new("Token", result.Token),
-                    new(ClaimTypes.Role, roleClaim.Value)
-                };
+                    {
+                        new(ClaimTypes.Name, result.IdNumber),
+                        new("Token", result.Token),
+                        new(ClaimTypes.Role, roleClaim.Value)
+                    };
 
                     var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                     var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);

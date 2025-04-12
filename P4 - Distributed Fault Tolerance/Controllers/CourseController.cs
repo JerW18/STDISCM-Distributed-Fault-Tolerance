@@ -14,11 +14,13 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
     public class CourseController : Controller
     {
         private readonly HttpClient _courseClient;
+        private readonly HttpClient _authClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public CourseController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
         {
             _courseClient = httpClientFactory.CreateClient("CourseApiClient");
+            _authClient = httpClientFactory.CreateClient("AuthApiClient");
             _httpContextAccessor = httpContextAccessor;
         }
         private string GetUserAccessToken()
@@ -39,7 +41,7 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
 
 
             var profs = new List<ProfModel>();
-            HttpResponseMessage response = await _courseClient.GetAsync("prof");
+            HttpResponseMessage response = await _authClient.GetAsync("prof");
 
             if (response.IsSuccessStatusCode)
             {

@@ -33,9 +33,9 @@ namespace Authentication_Service.Controllers
             var profs = await _userManager.GetUsersInRoleAsync("Teacher");
             var profList = profs.Select(p => new ProfModel
             {
-                Id = p.Id,
-                FirstName = p.FirstName,  // You may need to access a custom property here
-                LastName = p.LastName     // Same for LastName, or access the profile
+                Id = p.IdNumber,
+                FirstName = p.FirstName, 
+                LastName = p.LastName 
             }).ToList();
 
             return Ok(profList);
@@ -46,7 +46,7 @@ namespace Authentication_Service.Controllers
         [HttpGet("students/{idNumber}")]
         public IActionResult GetStudent(string idNumber)
         {
-            var student = _userManager.Users.FirstOrDefault(s => s.Id == idNumber);
+            var student = _userManager.Users.FirstOrDefault(s => s.IdNumber == idNumber);
             if (student == null) return NotFound();
 
             return Ok(new
@@ -90,7 +90,7 @@ namespace Authentication_Service.Controllers
 
                 await _userManager.UpdateAsync(user);
 
-                return Ok(new { token });
+                return Ok(new { token, user.IdNumber });
             }
             return Unauthorized(new { message = "Invalid email or password." });
         }
