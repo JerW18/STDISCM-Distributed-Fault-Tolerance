@@ -5,6 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Authentication_Service.Model;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Cryptography;
+using Microsoft.EntityFrameworkCore;
+using Authentication_Service.Data;
+using Microsoft.AspNetCore.Authorization;
+using System.Diagnostics;
 
 namespace Authentication_Service.Controllers
 {
@@ -15,16 +20,55 @@ namespace Authentication_Service.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _config;
 
+
         public AuthController(UserManager<ApplicationUser> userManager, IConfiguration config)
         {
             _userManager = userManager;
             _config = config;
         }
 
+        [HttpGet("prof")]
+        public async Task<IActionResult> GetProf()
+        {
+            var profs = await _userManager.GetUsersInRoleAsync("Teacher");
+            var profList = profs.Select(p => new ProfModel
+            {
+                Id = p.IdNumber,
+                FirstName = p.FirstName, 
+                LastName = p.LastName 
+            }).ToList();
+
+            return Ok(profList);
+
+        }
+
+
+        [HttpGet("students/{idNumber}")]
+        public IActionResult GetStudent(string idNumber)
+        {
+            var student = _userManager.Users.FirstOrDefault(s => s.IdNumber == idNumber);
+            if (student == null) return NotFound();
+
+            return Ok(new
+            {
+                student.IdNumber,
+                student.FirstName,
+                student.LastName
+            });
+        }
+
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            var user = new ApplicationUser { UserName = model.Email, Email = model.Email, FirstName = model.FirstName, LastName = model.LastName };
+            var user = new ApplicationUser
+            {
+                UserName = model.IdNumber,
+                Email = model.Email,
+                IdNumber = model.IdNumber,
+                FirstName = model.FirstName,
+                LastName = model.LastName
+            };
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (result.Succeeded)
@@ -35,30 +79,35 @@ namespace Authentication_Service.Controllers
             return BadRequest(result.Errors);
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            var user = await _userManager.FindByNameAsync(model.Email);
+            var user = await _userManager.FindByEmailAsync(model.Email);
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                var token = GenerateJwtToken(user);
-                return Ok(new { token });
+                var token = await GenerateJwtTokenAsync(user);
+
+                await _userManager.UpdateAsync(user);
+
+                return Ok(new { token, user.IdNumber });
             }
             return Unauthorized(new { message = "Invalid email or password." });
         }
 
-        private string GenerateJwtToken(ApplicationUser user)
+        private async Task<string> GenerateJwtTokenAsync(ApplicationUser user)
         {
             var jwtSettings = _config.GetSection("Jwt");
             var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new(ClaimTypes.NameIdentifier, user.Id),
+                new(ClaimTypes.Email, user.Email),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            var userRoles = _userManager.GetRolesAsync(user).Result;
+            var userRoles = await _userManager.GetRolesAsync(user);
             foreach (var role in userRoles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
@@ -70,7 +119,7 @@ namespace Authentication_Service.Controllers
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
+                expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: creds
             );
 

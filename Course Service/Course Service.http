@@ -1,4 +1,4 @@
-@Course_Service_HostAddress = http://localhost:5281
+@Course_Service_HostAddress = http://localhost:8002
 
 GET {{Course_Service_HostAddress}}/course/
 Accept: application/json

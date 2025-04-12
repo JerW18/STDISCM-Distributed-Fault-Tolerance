@@ -1,8 +1,10 @@
 ﻿using System.Diagnostics;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using P4___Distributed_Fault_Tolerance.Models;
@@ -11,29 +13,34 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly HttpClient _httpClient;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly HttpClient _authClient;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        private readonly string _apiBaseUrl = "https://localhost:5001/api/auth";
-
-        public AccountController(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
+        public AccountController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
-            _httpClient = httpClient;
-            _httpContextAccessor = httpContextAccessor;
+            _httpClientFactory = httpClientFactory;
+            _authClient = _httpClientFactory.CreateClient("AuthApiClient");
         }
-
-        public IActionResult LoginView() => View();
-        public IActionResult Register() => View();
 
         [HttpGet]
         public IActionResult Login()
         {
-            if (User.Identity.IsAuthenticated)
+            // Check if user is already authenticated via the cookie scheme
+            if (User.Identity?.IsAuthenticated == true)
             {
                 return RedirectToAction("Index", "Home");
             }
+            return View(); // Assuming LoginView.cshtml exists
+        }
 
-            return View(); 
+        [HttpGet]
+        public IActionResult Register()
+        {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            return View(); // Assuming Register.cshtml exists
         }
 
         [HttpPost]
@@ -44,35 +51,41 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
 
             var json = JsonConvert.SerializeObject(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PostAsync($"{_apiBaseUrl}/login", content);
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var result = JsonConvert.DeserializeObject<TokenResponse>(await response.Content.ReadAsStringAsync());
+                var response = await _authClient.PostAsync("login", content);
 
-                var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-                var jwtToken = tokenHandler.ReadJwtToken(result.Token);
-
-                var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
-
-                var claims = new List<Claim>
+                if (response.IsSuccessStatusCode)
                 {
-                    new(ClaimTypes.Name, model.Email),
-                    new("Token", result.Token),
-                    new(ClaimTypes.Role, roleClaim.Value)
-                };
+                    var result = JsonConvert.DeserializeObject<TokenResponse>(await response.Content.ReadAsStringAsync());
 
-                var claimsIdentity = new ClaimsIdentity(claims, "login");
-                var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+                    var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                    var jwtToken = tokenHandler.ReadJwtToken(result.Token);
 
-                await _httpContextAccessor.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+                    var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
 
-                return RedirectToAction("Index", "Home");
+                    var claims = new List<Claim>
+                    {
+                        new(ClaimTypes.Name, result.IdNumber),
+                        new("Token", result.Token),
+                        new(ClaimTypes.Role, roleClaim.Value)
+                    };
+
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+
+                    return RedirectToAction("Index", "Home");
+                }
+
+                ModelState.AddModelError("", "Invalid login.");
+                return View(model);
+            } catch (Exception)
+            {
+                ModelState.AddModelError("", "The authentication service is down. Please try again later.");
+                return View(model);
             }
-
-            ModelState.AddModelError("", "Invalid login.");
-            return View(model);
         }
 
         [HttpPost]
@@ -88,41 +101,48 @@ namespace P4___Distributed_Fault_Tolerance.Controllers
 
             var json = JsonConvert.SerializeObject(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PostAsync($"{_apiBaseUrl}/register", content);
-            if (response.IsSuccessStatusCode)
-            {
-                return RedirectToAction("Login");
-            }
-
-            var errorResponse = await response.Content.ReadAsStringAsync();
-
             try
             {
-                var errorList = JsonConvert.DeserializeObject<List<ApiError>>(errorResponse);
-                if (errorList != null)
+                var response = await _authClient.PostAsync("register", content);
+                if (response.IsSuccessStatusCode)
                 {
-                    foreach (var error in errorList)
+                    return RedirectToAction("Login");
+                }
+
+                var errorResponse = await response.Content.ReadAsStringAsync();
+
+                try
+                {
+                    var errorList = JsonConvert.DeserializeObject<List<ApiError>>(errorResponse);
+                    if (errorList != null)
                     {
-                        ModelState.AddModelError("", error.Description);
+                        foreach (var error in errorList)
+                        {
+                            ModelState.AddModelError("", error.Description);
+                        }
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "An unexpected error occurred.");
                     }
                 }
-                else
+                catch (JsonException)
                 {
-                    ModelState.AddModelError("", "An unexpected error occurred.");
+                    ModelState.AddModelError("", "An error occurred while processing the response.");
                 }
-            }
-            catch (JsonException)
-            {
-                ModelState.AddModelError("", "An error occurred while processing the response.");
-            }
 
-            return View(model);
+                return View(model);
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("", "The authentication service is down. Please try again later.");
+                return View(model);
+            }
         }
 
         public async Task<IActionResult> Logout()
         {
-            await _httpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login");
         }
     }

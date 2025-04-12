@@ -1,0 +1,127 @@
+﻿@model List<P4___Distributed_Fault_Tolerance.Models.GradeModel>
+<style>
+    .btn {
+        border: none;
+        outline: none;
+        background: linear-gradient(90deg, #087830, #005f29);
+        padding: .375rem .75rem;
+        border-radius: 10px;
+        color: white;
+        font-size: 1rem;
+        text-decoration: none;
+        line-height: 1.5;
+        font-weight: 400;
+    }
+    /* Style for the select dropdown */
+    form select {
+        height: 36px;
+        width: 130px;
+        outline: none;
+        padding-left: 15px;
+        border-radius: 10px;
+        border: 1px solid lightgrey;
+        border-bottom-width: 2px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+    }
+
+        /* Focus effect for the select dropdown */
+        form select:focus {
+            border-color: #087830;
+        }
+
+        /* Placeholder text style */
+        form select option {
+            color: #999;
+            transition: all 0.3s ease;
+        }
+
+        /* Option color when focused */
+        form select:focus option {
+            color: #000;
+        }
+
+        /* Custom style for the disabled option */
+        form select option:disabled {
+            color: #ccc;
+        }
+</style>
+<h2>Upload Grades</h2>
+<div asp-validation-summary="All" class="text-danger"></div>
+    <table class="table table-striped" id="uploadgrades">
+        <thead>
+            <tr>
+                <th>ID Number</th>
+                <th>Last Name</th>
+				<th>First Name</th>
+                <th>Course Code</th>
+                <th>Course ID</th>
+                <th>Units</th>
+                <th>Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var grade in Model)
+            {
+                <tr>
+					<td>@grade.StudentId</td>
+                    <td>@grade.LastName</td>
+                    <td>@grade.FirstName</td>
+                    <td>@grade.CourseCode</td>
+                    <td>@grade.CourseId</td>
+                    <td>@grade.Units</td>
+                    <td>
+                        <form method="post" asp-controller="Grade" asp-action="UploadGradeToDB">
+                            <input type="hidden" name="StudentId" value="@grade.StudentId" />
+                            <input type="hidden" name="LastName" value="@grade.LastName" />
+						    <input type="hidden" name="FirstName" value="@grade.FirstName" />
+							<input type="hidden" name="CourseId" value="@grade.CourseId" />
+						    <input type="hidden" name="CourseCode" value="@grade.CourseCode" />
+                            <input type="hidden" name="Units" value="@grade.Units" />
+                        <select name="Grade" required>
+                                <option value="" disabled selected>Select grade</option>
+                                <option value="4.0">4.0</option>
+                                <option value="3.5">3.5</option>
+                                <option value="3.0">3.0</option>
+                                <option value="2.5">2.5</option>
+                                <option value="2.0">2.0</option>
+                                <option value="1.5">1.5</option>
+                                <option value="1.0">1.0</option>
+                                <option value="Failed">Failed</option>
+                                <option value="Incomplete">Incomplete</option>
+                                <option value="Withdrawn">Withdrawn</option>
+                            </select>
+                            <button type="submit" class="btn">Save</button>
+                        </form>
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        function shouldHideColumn(tableSelector, columnIndex) {
+            var allNA = true;
+            $(tableSelector).find('tbody tr').each(function() {
+                var cellText = $(this).find('td:nth-child(' + columnIndex + ')').text().trim();
+                if (cellText !== 'N/A') {
+                    allNA = false;
+                    return false; // Exit loop early
+                }
+            });
+            return allNA;
+        }
+
+        var table = '.table.table-striped';
+        var columnCount = $(table).find('thead th').length; // Get the total number of columns
+
+        // Loop through all columns and hide them if they only contain "N/A"
+        for (var i = 1; i <= columnCount; i++) {
+            if (shouldHideColumn(table, i)) {
+                $(table).find('thead th:nth-child(' + i + '), tbody td:nth-child(' + i + ')').hide();
+            }
+        }
+    });
+</script>

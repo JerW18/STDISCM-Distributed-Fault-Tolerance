@@ -1,0 +1,57 @@
+﻿@model List<P4___Distributed_Fault_Tolerance.Models.Course>
+
+@{
+    ViewData["Title"] = "Available Courses";
+}
+
+<h2>Available Courses</h2>
+<div asp-validation-summary="All" class="text-danger"></div>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Course Code</th>
+            <th>Course Name</th>
+            <th>Section</th>
+            <th>Units</th>
+            <th>Capacity</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var course in Model)
+        {
+            <tr>
+                <td>@course.CourseCode</td>
+                <td>@course.CourseName</td>
+                <td>@course.CourseSection</td>
+                <td>@course.Units</td>
+                <td>@(course.Students?.Count ?? 0) / @course.Capacity</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        function shouldHideColumn(tableSelector, columnIndex) {
+            var allNA = true;
+            $(tableSelector).find('tbody tr').each(function() {
+                var cellText = $(this).find('td:nth-child(' + columnIndex + ')').text().trim();
+                if (cellText !== 'N/A') {
+                    allNA = false;
+                    return false; // Exit loop early
+                }
+            });
+            return allNA;
+        }
+
+        var table = '.table.table-striped';
+        var columnCount = $(table).find('thead th').length; // Get the total number of columns
+
+        // Loop through all columns and hide them if they only contain "N/A"
+        for (var i = 1; i <= columnCount; i++) {
+            if (shouldHideColumn(table, i)) {
+                $(table).find('thead th:nth-child(' + i + '), tbody td:nth-child(' + i + ')').hide();
+            }
+        }
+    });
+</script>
